@@ -1,1 +1,9 @@
 bittorrent/bin/
+.idea
+.DS_Store
+bin
+out
+*.iml
+.classpath
+.project
+.settings
