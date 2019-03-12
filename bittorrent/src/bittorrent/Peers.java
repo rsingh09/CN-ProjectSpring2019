@@ -1,35 +1,53 @@
 package bittorrent;
 
-public class Peers 
-{
+public class Peers {
 	int peerID;
 	String hostName;
-	String listeningPort;
+	int listeningPort;
 	boolean hasFile;
-	
-	public int getPeerID() {
-		return peerID;
+
+	public Peers() {
+
 	}
+
+	public Peers(int peerID, String hostName, int listeningPort, boolean hasFile) {
+		super();
+		this.peerID = peerID;
+		this.hostName = hostName;
+		this.listeningPort = listeningPort;
+		this.hasFile = hasFile;
+	}
+
 	public void setPeerID(int peerID) {
 		this.peerID = peerID;
 	}
-	public String getHostName() {
-		return hostName;
-	}
+
 	public void setHostName(String hostName) {
 		this.hostName = hostName;
 	}
-	public String getListeningPort() {
-		return listeningPort;
-	}
-	public void setListeningPort(String listeningPort) {
+
+	public void setListeningPort(int listeningPort) {
 		this.listeningPort = listeningPort;
 	}
-	public boolean getHasFile() {
-		return hasFile;
-	}
+
 	public void setHasFile(boolean hasFile) {
 		this.hasFile = hasFile;
 	}
+
+	public int getPeerID() {
+		return peerID;
+	}
+
+	public String getHostName() {
+		return hostName;
+	}
+
+	public int getListeningPort() {
+		return listeningPort;
+	}
+
+	public boolean getHasFile() {
+		return hasFile;
+	}
+
 }
- 
