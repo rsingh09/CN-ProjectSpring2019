@@ -1,18 +1,16 @@
 package bittorrent;
 
 /**
- *
  * @author kaush
  * TO-DO populate all the attributes of Remote Peer Info
  */
-public class Peers
-{
-	int peerID;
-	String hostName;
-	String listeningPort;
-	int fileInfo;
-	boolean hasFile;
-	int peerIndex;
+public class Peers {
+    int peerID;
+    String hostName;
+    String listeningPort;
+    int fileInfo;
+    boolean hasFile;
+    int peerIndex;
 
 //	public Peers(int id, String host, String port, boolean hasFile, int lineNumber) {
 //		this.peerID = id;
@@ -22,68 +20,68 @@ public class Peers
 //		this.peerIndex = lineNumber;
 //	}
 
-	public Peers(int id, String host, String port, int fileInfo, int lineNumber) {
-		this.peerID = id;
-		this.hostName = host;
-		this.listeningPort = port;
-		this.fileInfo = fileInfo;
-		this.peerIndex = lineNumber;
-	}
+    public Peers(int id, String host, String port, int fileInfo, int lineNumber) {
+        this.peerID = id;
+        this.hostName = host;
+        this.listeningPort = port;
+        this.fileInfo = fileInfo;
+        this.peerIndex = lineNumber;
+    }
 
-	public int getPeerIndex() {
-		return peerIndex;
-	}
+    public Peers(int peerID, String hostName, String listeningPort, boolean hasFile) {
+        super();
+        this.peerID = peerID;
+        this.hostName = hostName;
+        this.listeningPort = listeningPort;
+        this.hasFile = hasFile;
+    }
 
-	public void setPeerIndex(int peerIndex) {
-		this.peerIndex = peerIndex;
-	}
+    public int getPeerIndex() {
+        return peerIndex;
+    }
 
-	public boolean isFirstPeer(){
-		return this.peerIndex == 1;
-	}
+    public void setPeerIndex(int peerIndex) {
+        this.peerIndex = peerIndex;
+    }
 
-	public int getPeerID() {
-		return peerID;
-	}
+    public boolean isFirstPeer() {
+        return this.peerIndex == 1;
+    }
 
-	public Peers(int peerID, String hostName, int listeningPort, boolean hasFile) {
-		super();
-		this.peerID = peerID;
-		this.hostName = hostName;
-		this.listeningPort = listeningPort;
-		this.hasFile = hasFile;
-	}
+    public int getPeerID() {
+        return peerID;
+    }
 
-	public void setPeerID(int peerID) {
-		this.peerID = peerID;
-	}
+    public void setPeerID(int peerID) {
+        this.peerID = peerID;
+    }
 
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
+    public String getHostName() {
+        return hostName;
+    }
 
-	public void setListeningPort(int listeningPort) {
-		this.listeningPort = listeningPort;
-	}
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
 
-	public void setHasFile(boolean hasFile) {
-		this.hasFile = fileInfo == 1 ? true : false ;
-	}
+    public String getListeningPort() {
+        return listeningPort;
+    }
 
-	public int getPeerID() {
-		return peerID;
-	}
+//	public int getPeerID() {
+//		return peerID;
+//	}
 
-	public String getHostName() {
-		return hostName;
-	}
+    public void setListeningPort(String listeningPort) {
+        this.listeningPort = listeningPort;
+    }
 
-	public int getListeningPort() {
-		return listeningPort;
-	}
+    public boolean getHasFile() {
+        return hasFile;
+    }
 
-	public boolean getHasFile() {
-		return hasFile;
-	}
+    public void setHasFile(boolean hasFile) {
+        this.hasFile = fileInfo == 1;
+    }
 
 }
