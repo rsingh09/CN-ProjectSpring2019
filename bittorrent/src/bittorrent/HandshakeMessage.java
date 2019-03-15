@@ -1,5 +1,8 @@
 package bittorrent;
 
+/**
+ * Class that populates the handshake message that is sent once the connection is established
+ */
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 

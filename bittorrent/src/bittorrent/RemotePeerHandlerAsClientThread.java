@@ -4,6 +4,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+/**
+ * Class that houses the implementation to send requests to peers acting as host
+ * Sends handshake message to the server listener threads that are running
+ * @author kaush
+ *
+ */
 public class RemotePeerHandlerAsClientThread extends Thread {
 
     private int remotePeerId;
