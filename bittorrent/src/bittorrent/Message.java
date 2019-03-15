@@ -1,5 +1,7 @@
 package bittorrent;
-
+/*
+*Stores the message information
+*/
 public class Message {
 
     int messageLength;

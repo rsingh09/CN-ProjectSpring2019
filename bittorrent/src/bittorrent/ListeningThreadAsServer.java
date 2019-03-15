@@ -15,7 +15,9 @@ public class ListeningThreadAsServer extends Thread {
     private Socket peerSocket;
     private RemotePeerHandlerAsClientThread clientThread;
 
-
+	/*
+	Constructor
+	*/
     public ListeningThreadAsServer(ServerSocket listeningSocket, String peerID) {
         this.servSocket = listeningSocket;
         this.peerID = peerID;

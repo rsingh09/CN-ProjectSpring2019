@@ -5,10 +5,18 @@ import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
+/**
+	* @author Richa
+	*Logs into the log files 
+*/
 public class BitTorrentLogger {
     boolean append = true;
-
+	/*
+	Function name : WriteToLog
+	Parameters passed: Peer ID , Msg (message to be printed), level of the message Info/Warning/Severe
+	Return: Void
+	Writes into the log file based on based on the peer id
+	*/
     public void WriteToLog(int peerId, String msg, String level) {
         Logger logger = Logger.getLogger(Integer.toString(peerId));
         FileHandler handler = null;
@@ -42,7 +50,12 @@ public class BitTorrentLogger {
                 break;
         }
     }
-
+	/*
+	Function name : WriteToLog
+	Parameters passed: Msg (message to be printed), level of the message Info/Warning/Severe
+	Return: Void
+	Writes into the common log file 
+	*/
     public void WriteToLog(String msg, String level) {
         Logger logger = Logger.getLogger("MyLog");
         FileHandler handler = null;

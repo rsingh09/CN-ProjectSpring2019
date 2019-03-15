@@ -15,7 +15,9 @@ public class HandshakeMessage implements Serializable {
 
     private String headerMessage = "P2PFILESHARINGPROJ";
 
-
+	/*
+	Constructor
+	*/
     public HandshakeMessage(String id) {
         try {
             header = headerMessage.getBytes(StandardCharsets.UTF_8);

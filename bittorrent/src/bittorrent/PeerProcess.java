@@ -6,7 +6,9 @@ import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
-
+/*
+Handle major peer functionality
+*/
 public class PeerProcess {
     static BitTorrentLogger log = new BitTorrentLogger();
     private static String peerID;
@@ -24,7 +26,12 @@ public class PeerProcess {
 	/*public void Client() {
 		
 	}*/
-
+	/*
+	Function name : readPeerInfo
+	Parameters passed: None
+	Return: Void
+	Reads the peer info from the cfg file
+	*/
     static void readPeerInfo() {
         File file = new File("PeerInfo.cfg");
         //List<Peers> peerList  = new ArrayList<Peers>();
@@ -49,6 +56,12 @@ public class PeerProcess {
         }
     }
 
+	/*
+	Function name : main
+	Parameters passed: String[] args
+	Return: Void
+	Main function
+	*/
     //main method
     public static void main(String[] args) {
         PeerProcess peerProcess = new PeerProcess();
@@ -105,7 +118,12 @@ public class PeerProcess {
         }
 //        }
     }
-
+	/*
+	Function name : startServer
+	Parameters passed: PeerProcess, peerid
+	Return: int
+	Starts the server
+	*/
     private static int startServer(PeerProcess peerProcess, String peerID) {
         try {
             peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
