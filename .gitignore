@@ -1,8 +1,8 @@
 bittorrent/bin/
 .idea
 .DS_Store
-bin
-out
+bin/
+out/
 *.iml
 .classpath
 .project
