@@ -4,6 +4,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+/**
+ * Class that houses the implementation to send requests to peers acting as host
+ * Sends handshake message to the server listener threads that are running
+ * @author kaush
+ *
+ */
 public class RemotePeerHandlerAsClientThread extends Thread {
 
     private int remotePeerId;
@@ -15,7 +21,9 @@ public class RemotePeerHandlerAsClientThread extends Thread {
     private Socket clientSocket;
     private ObjectOutputStream out;         //stream write to the socket
     private ObjectInputStream in;          //stream read from the socket
-
+	/*
+	Constructor
+	*/
     public RemotePeerHandlerAsClientThread(int peerID, String hostname, int port, int connectionType) {
         // TODO Auto-generated constructor stub
         this.remotePeerId = peerID;
@@ -23,7 +31,9 @@ public class RemotePeerHandlerAsClientThread extends Thread {
         this.port = port;
         this.connectionType = connectionType;
     }
-
+	/*
+	Constructor
+	*/
     public RemotePeerHandlerAsClientThread(Socket peerSocket, String peerID) {
         // TODO Auto-generated constructor stub
         this.remotePeerId = Integer.parseInt(peerID);
@@ -61,7 +71,12 @@ public class RemotePeerHandlerAsClientThread extends Thread {
     public void setConnectionType(int connectionType) {
         this.connectionType = connectionType;
     }
-
+	/*
+	Function name : createSocketAndStreams
+	Parameters passed: None
+	Return: Void
+	Create sockets and the streams
+	*/
     private void createSocketAndStreams() {
         try {
             this.clientSocket = new Socket(getHostname(), getPort());
@@ -80,7 +95,12 @@ public class RemotePeerHandlerAsClientThread extends Thread {
         sendHandshakeMessage();
 
     }
-
+	/*
+	Function name : sendHandshakeMessage
+	Parameters passed: None
+	Return: Void
+	Send hand shake messages
+	*/
     void sendHandshakeMessage() {
         try {
             //stream write the message
@@ -90,7 +110,12 @@ public class RemotePeerHandlerAsClientThread extends Thread {
             ioException.printStackTrace();
         }
     }
-
+	/*
+	Function name : receiveHandShakeMessage
+	Parameters passed: None
+	Return: Void
+	receives hand shake messages
+	*/
     void receiveHandShakeMessage() {
 //		byte[] receivedMsg = new byte[32];
 

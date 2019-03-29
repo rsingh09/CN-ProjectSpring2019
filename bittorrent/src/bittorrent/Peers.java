@@ -20,6 +20,9 @@ public class Peers {
 //		this.peerIndex = lineNumber;
 //	}
 
+	/*
+		Constructor
+	*/
     public Peers(int id, String host, String port, int fileInfo, int lineNumber) {
         this.peerID = id;
         this.hostName = host;
@@ -27,7 +30,9 @@ public class Peers {
         this.fileInfo = fileInfo;
         this.peerIndex = lineNumber;
     }
-
+	/*
+		Constructor
+	*/
     public Peers(int peerID, String hostName, String listeningPort, boolean hasFile) {
         super();
         this.peerID = peerID;

@@ -1,5 +1,8 @@
 package bittorrent;
 
+/**
+ * Class that populates the handshake message that is sent once the connection is established
+ */
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 
@@ -12,7 +15,9 @@ public class HandshakeMessage implements Serializable {
 
     private String headerMessage = "P2PFILESHARINGPROJ";
 
-
+	/*
+	Constructor
+	*/
     public HandshakeMessage(String id) {
         try {
             header = headerMessage.getBytes(StandardCharsets.UTF_8);
