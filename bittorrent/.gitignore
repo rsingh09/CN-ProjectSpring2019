@@ -4,4 +4,8 @@ bin
 out
 *.iml
 *.log
-
+.classpath
+bin/
+.settings/
+*.cfg
+*.project
