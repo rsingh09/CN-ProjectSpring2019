@@ -88,7 +88,7 @@ public class PeerProcess {
                 Set<String> keys1 = remotePeerInfo.keySet();
                 Iterator<String> itr1 = keys1.iterator();
                 while (itr1.hasNext()) {
-                    Peers peer = remotePeerInfo.get(itr.next());
+                    Peers peer = remotePeerInfo.get(itr1.next());
                     if (peerProcess.peerProcessIndex > peer.getPeerIndex()) {
 
                         RemotePeerHandlerAsClientThread remotePeerThread = new RemotePeerHandlerAsClientThread(peer.getPeerID(), peer.getHostName(), Integer.parseInt(peer.getListeningPort()), 1);
@@ -99,14 +99,14 @@ public class PeerProcess {
                 startServer(peerProcess, peerID);
             }
 
-//                count++;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-//        }
+
     }
 
-    private static int startServer(PeerProcess peerProcess, String peerID) {
+    private static void startServer(PeerProcess peerProcess, String peerID) {
         try {
             peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
             peerProcess.listeningThread = new ListeningThreadAsServer(peerProcess.listeningSocket, peerID);
@@ -114,12 +114,12 @@ public class PeerProcess {
             String msg = "Created Peer" + peerID;
             String lvl = "Info";
             log.WriteToLog(msg, lvl);
-            return 0;
+//            return 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return 0;
+//        return 0;
     }
 
 }
