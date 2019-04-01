@@ -3,14 +3,18 @@ package bittorrent;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Set;
-
+/*
+Handle major peer functionality
+*/
 public class PeerProcess {
     static BitTorrentLogger log = new BitTorrentLogger();
     private static String peerID;
-    private static Hashtable<String, Peers> remotePeerInfo = new Hashtable<String, Peers>();
+    private static HashMap<String, Peers> remotePeerInfo = new LinkedHashMap<String, Peers>();
     Socket requestSocket;           //socket connect to the server
     ObjectOutputStream out;         //stream write to the socket
     ObjectInputStream in;          //stream read from the socket
@@ -24,7 +28,12 @@ public class PeerProcess {
 	/*public void Client() {
 		
 	}*/
-
+	/*
+	Function name : readPeerInfo
+	Parameters passed: None
+	Return: Void
+	Reads the peer info from the cfg file
+	*/
     static void readPeerInfo() {
         File file = new File("PeerInfo.cfg");
         //List<Peers> peerList  = new ArrayList<Peers>();
@@ -49,6 +58,12 @@ public class PeerProcess {
         }
     }
 
+	/*
+	Function name : main
+	Parameters passed: String[] args
+	Return: Void
+	Main function
+	*/
     //main method
     public static void main(String[] args) {
         PeerProcess peerProcess = new PeerProcess();
@@ -59,16 +74,17 @@ public class PeerProcess {
         try {
             // reading peerID from command line
             peerID = args[0];
-            Set<String> keys = remotePeerInfo.keySet();
-            Iterator<String> itr = keys.iterator();
             boolean flagForFirstPeer = false;
-            while (itr.hasNext()) {
-                Peers peerInfo = remotePeerInfo.get(itr.next());
-                if (peerInfo.getPeerID() == Integer.parseInt(peerID)) {
+            for(String st : remotePeerInfo.keySet())
+            {
+            	Peers peerInfo = remotePeerInfo.get(st);
+                if (peerInfo.getPeerID() == Integer.parseInt(peerID))
+                {
                     peerProcess.LISTENING_PORT = Integer.parseInt(peerInfo.getListeningPort());
                     peerProcess.peerProcessIndex = peerInfo.getPeerIndex();
 
-                    if (peerInfo.isFirstPeer()) {
+                    if (peerInfo.isFirstPeer())
+                    {
                         flagForFirstPeer = true;
                         break;
                     }
@@ -85,10 +101,8 @@ public class PeerProcess {
 
             } else {
                 //Create logs and directory for the new peer
-                Set<String> keys1 = remotePeerInfo.keySet();
-                Iterator<String> itr1 = keys1.iterator();
-                while (itr1.hasNext()) {
-                    Peers peer = remotePeerInfo.get(itr1.next());
+                for(String st : remotePeerInfo.keySet()) {
+                    Peers peer = remotePeerInfo.get(st);
                     if (peerProcess.peerProcessIndex > peer.getPeerIndex()) {
 
                         RemotePeerHandlerAsClientThread remotePeerThread = new RemotePeerHandlerAsClientThread(peer.getPeerID(), peer.getHostName(), Integer.parseInt(peer.getListeningPort()), 1);
@@ -99,14 +113,19 @@ public class PeerProcess {
                 startServer(peerProcess, peerID);
             }
 
-
+//                count++;
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+//        }
     }
-
-    private static void startServer(PeerProcess peerProcess, String peerID) {
+	/*
+	Function name : startServer
+	Parameters passed: PeerProcess, peerid
+	Return: int
+	Starts the server
+	*/
+    private static int startServer(PeerProcess peerProcess, String peerID) {
         try {
             peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
             peerProcess.listeningThread = new ListeningThreadAsServer(peerProcess.listeningSocket, peerID);
@@ -114,12 +133,12 @@ public class PeerProcess {
             String msg = "Created Peer" + peerID;
             String lvl = "Info";
             log.WriteToLog(msg, lvl);
-//            return 0;
+            return 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-//        return 0;
+        return 0;
     }
 
 }

@@ -80,9 +80,9 @@ public class RemotePeerHandlerAsClientThread extends Thread {
     private void createSocketAndStreams() {
         try {
             this.clientSocket = new Socket(getHostname(), getPort());
-            this.out = new ObjectOutputStream(clientSocket.getOutputStream());
-            this.out.flush();
-            this.in = new ObjectInputStream(clientSocket.getInputStream());
+            out = new ObjectOutputStream(clientSocket.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(clientSocket.getInputStream());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
