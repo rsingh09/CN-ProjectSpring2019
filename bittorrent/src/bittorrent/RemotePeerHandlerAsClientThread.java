@@ -1,7 +1,7 @@
 package bittorrent;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -20,24 +20,35 @@ public class RemotePeerHandlerAsClientThread extends Thread {
     //socket declaration
     private Socket clientSocket;
     private ObjectOutputStream out;         //stream write to the socket
-    private ObjectInputStream in;          //stream read from the socket
+    private ObjectInputStream in;
+    
+    boolean handshakeReceived = false;//stream read from the socket
 	/*
 	Constructor
 	*/
-    public RemotePeerHandlerAsClientThread(int peerID, String hostname, int port, int connectionType) {
+    public RemotePeerHandlerAsClientThread(int peerID, String hostname, int port,
+    		int connectionType,Socket peerSocket,ObjectOutputStream obStream,
+    		ObjectInputStream inStream) {
         // TODO Auto-generated constructor stub
         this.remotePeerId = peerID;
         this.hostname = hostname;
         this.port = port;
         this.connectionType = connectionType;
+        out = obStream;
+        in = inStream;
+        clientSocket = peerSocket;  
     }
 	/*
 	Constructor
 	*/
-    public RemotePeerHandlerAsClientThread(Socket peerSocket, String peerID) {
+    public RemotePeerHandlerAsClientThread(Socket peerSocket, String peerID,ObjectOutputStream obStream,
+    		ObjectInputStream inStream) 
+    {
         // TODO Auto-generated constructor stub
-        this.remotePeerId = Integer.parseInt(peerID);
-        this.clientSocket = peerSocket;
+        remotePeerId = Integer.parseInt(peerID);
+        out = obStream;
+        in = inStream;
+        clientSocket = peerSocket;
     }
 
     public int getRemotePeerId() {
@@ -77,22 +88,62 @@ public class RemotePeerHandlerAsClientThread extends Thread {
 	Return: Void
 	Create sockets and the streams
 	*/
-    private void createSocketAndStreams() {
-        try {
-            this.clientSocket = new Socket(getHostname(), getPort());
-            this.out = new ObjectOutputStream(clientSocket.getOutputStream());
-            this.out.flush();
-            this.in = new ObjectInputStream(clientSocket.getInputStream());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+//    private void createSocketAndStreams() {
+//        try {
+//        	InetAddress address = InetAddress.getByName(hostname); 
+//            clientSocket = new Socket(address, port);
+//            out = new ObjectOutputStream(clientSocket.getOutputStream());
+//            in = new ObjectInputStream(clientSocket.getInputStream());
+//            
+//            HandshakeMessage handshake = new HandshakeMessage(Integer.toString(remotePeerId));
+//            out.writeObject(handshake);
+//            out.flush();
+//            
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//    }
+//    
 
     @Override
-    public void run() {
-        // TODO Auto-generated method stub
-        createSocketAndStreams();
-        sendHandshakeMessage();
+    public void run() {   	
+    	System.out.println("Listening to the messages");
+    	try
+    	{
+    		while(true)
+    		{
+    			Object ob = in.readObject();
+    			if(ob instanceof HandshakeMessage)
+    			{
+    				HandshakeMessage hs = (HandshakeMessage) ob;
+    				System.out.println("Received a handshake message");
+    				String peerId = new String(hs.getPeerID());
+    				HandshakeMessage handshake = new HandshakeMessage(peerId);
+					
+					out.writeObject(handshake);
+					out.flush();
+    			}
+    			else
+    			{
+    				
+    			}
+    		}
+    	}
+    	catch(Exception ex)
+    	{
+    		ex.printStackTrace();
+    	}
+    	finally
+    	{
+    		try {
+				in.close();
+				out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+    		
+    	}
 
     }
 	/*
@@ -104,7 +155,7 @@ public class RemotePeerHandlerAsClientThread extends Thread {
     void sendHandshakeMessage() {
         try {
             //stream write the message
-            out.writeObject(new HandshakeMessage(Integer.toString(getRemotePeerId())));
+            out.writeObject(new HandshakeMessage(Integer.toString(remotePeerId)));
             out.flush();
         } catch (Exception ioException) {
             ioException.printStackTrace();

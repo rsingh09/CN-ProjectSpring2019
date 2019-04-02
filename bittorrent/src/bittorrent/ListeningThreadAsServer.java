@@ -1,5 +1,7 @@
 package bittorrent;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -29,7 +31,14 @@ public class ListeningThreadAsServer extends Thread {
         // TODO Auto-generated method stub
         try {
             peerSocket = servSocket.accept();
-            clientThread = new RemotePeerHandlerAsClientThread(peerSocket, peerID);
+            
+            System.out.println("A new client is connected to the server " + peerSocket);
+            ObjectOutputStream obOutStream = new ObjectOutputStream(peerSocket.getOutputStream());
+            ObjectInputStream obInStream = new ObjectInputStream(peerSocket.getInputStream());
+            
+            System.out.println("Assigning the client handler for the connection");
+            
+            clientThread = new RemotePeerHandlerAsClientThread(peerSocket, peerID,obOutStream, obInStream);
             clientThread.start();
 
         } catch (Exception e) {
