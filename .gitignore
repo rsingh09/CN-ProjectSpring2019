@@ -7,3 +7,13 @@ out/
 .classpath
 .project
 .settings
+bittorrent/tr.xml
+bittorrent/general.log.lck
+bittorrent/general.log.2.lck
+bittorrent/general.log.2
+bittorrent/general.log.1.lck
+bittorrent/general.log.1
+bittorrent/TestPeers.jar
+bittorrent/ReadMe.txt
+bittorrent/Peers.jar
+bittorrent.rar
