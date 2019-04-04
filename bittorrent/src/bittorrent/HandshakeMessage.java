@@ -40,6 +40,7 @@ public class HandshakeMessage implements Serializable {
     public byte[] getPeerID() {
         return peerID;
     }
+
 //	public void setPeerID(int peerID) {
 //		this.peerID = peerID;
 //	}

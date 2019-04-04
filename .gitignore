@@ -1,4 +1,4 @@
-bittorrent/bin/
+bin/bittorrent
 .idea
 .DS_Store
 bin/
