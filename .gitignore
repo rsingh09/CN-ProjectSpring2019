@@ -1,4 +1,4 @@
-bin/bittorrent
+bittorrent/bin/*
 .idea
 .DS_Store
 bin/
@@ -8,12 +8,10 @@ out/
 .project
 .settings
 bittorrent/tr.xml
-bittorrent/general.log.lck
-bittorrent/general.log.2.lck
-bittorrent/general.log.2
-bittorrent/general.log.1.lck
-bittorrent/general.log.1
-bittorrent/TestPeers.jar
+bittorrent/*.log
+bittorrent/*.log.*
+bittorrent/*.jar
 bittorrent/ReadMe.txt
-bittorrent/Peers.jar
-bittorrent.rar
+*.rar
+bittorrent/*.classpath
+
