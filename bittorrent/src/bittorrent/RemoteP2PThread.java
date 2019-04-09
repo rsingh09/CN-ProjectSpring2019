@@ -39,7 +39,6 @@ public class RemoteP2PThread extends Thread {
         try {
             this.clientSocket = new Socket(this.hostname, this.port);
             this.outputStream = clientSocket.getOutputStream();
-//            this.outputStream.flush();
             this.inputStream = clientSocket.getInputStream();
         } catch (Exception ex) {
             ex.printStackTrace();

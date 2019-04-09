@@ -18,6 +18,7 @@ public class P2PServerThread extends Thread {
 	private int listeningPort;
 	private String peerID;
 	private Socket peerSocket;
+	Selector selector;
 	private RemoteP2PThread clientThread;
 	/*
 	 * Constructor
@@ -28,14 +29,14 @@ public class P2PServerThread extends Thread {
 	}
 
 	public void run() {
-		Selector selector;
 		try {
 			selector = Selector.open();
 			ServerSocketChannel serverSocket = ServerSocketChannel.open();
-			serverSocket.bind(new InetSocketAddress("localhost", 6008));
+			serverSocket.bind(new InetSocketAddress("localhost", listeningPort));
 			serverSocket.configureBlocking(false);
 			serverSocket.register(selector, SelectionKey.OP_ACCEPT);
 			ByteBuffer buffer = ByteBuffer.allocate(15000);
+			System.out.println("Print 1");
 			while (true) {
 				selector.select();
 				Set<SelectionKey> selectedKeys = selector.selectedKeys();
@@ -45,11 +46,12 @@ public class P2PServerThread extends Thread {
 					SelectionKey key = iter.next();
 
 					if (key.isAcceptable()) {
+						System.out.println("Print 2");
 						register(selector, serverSocket);
 					}
 
 					if (key.isReadable()) {
-						//answerWithEcho(buffer, key);//form message object and transfer to message handler
+						answerWithEcho(buffer, key);//form message object and transfer to message handler
 						System.out.print("message received");
 					}
 					iter.remove();
@@ -61,6 +63,15 @@ public class P2PServerThread extends Thread {
 		}
 	}
 
+	 private static void answerWithEcho(ByteBuffer buffer, SelectionKey key)
+		      throws IOException {
+		  
+		        SocketChannel client = (SocketChannel) key.channel();
+		        client.read(buffer);	 
+		        buffer.flip();
+		        client.write(buffer);
+		        buffer.clear();
+		    }
 	private static void register(Selector selector, ServerSocketChannel serverSocket) throws IOException {
 
 		SocketChannel client = serverSocket.accept();

@@ -102,6 +102,7 @@ public class PeerProcess {
                 startServer(peerProcess, peerID);
 
             } else {
+            	new P2PClient().sendHandshake("Hello");
                 //Create logs and directory for the new peer
                 Set<String> keys1 = remotePeerInfo.keySet();
                 Iterator<String> itr1 = keys1.iterator();
