@@ -1,11 +1,11 @@
-package bittorrent;
+
 /*
 *Stores the message information
 */
 public class Message {
 
     int messageLength;
-    int MessageType;
+    MessageTypes MessageType;
     String messagePayload;
 
     public int getMessageLength() {
@@ -16,11 +16,11 @@ public class Message {
         this.messageLength = messageLength;
     }
 
-    public int getMessageType() {
+    public MessageTypes getMessageType() {
         return MessageType;
     }
 
-    public void setMessageType(int messageType) {
+    public void setMessageType(MessageTypes messageType) {
         MessageType = messageType;
     }
 
@@ -31,5 +31,6 @@ public class Message {
     public void setMessagePayload(String messagePayload) {
         this.messagePayload = messagePayload;
     }
+    
 
 }

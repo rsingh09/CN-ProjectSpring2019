@@ -1,4 +1,4 @@
-package bittorrent;
+//package bittorrent;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -41,7 +41,7 @@ public class PeerProcess {
 	}*/
 
     static void readPeerInfo() {
-        File file = new File("PeerInfo.cfg");
+        File file = new File(System.getProperty("user.dir") + File.separator + "PeerInfo.cfg");
         //List<Peers> peerList  = new ArrayList<Peers>();
         try {
             BufferedReader br = new BufferedReader(new FileReader(file));
@@ -50,7 +50,7 @@ public class PeerProcess {
             while ((line = br.readLine()) != null) {
                 String[] tokens = line.split(" ");
                 remotePeerInfo.put(tokens[0], new Peers(Integer.parseInt(tokens[0]),
-                        tokens[1], tokens[2], Integer.parseInt(tokens[3]), index));
+                        tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), index));
                 index++;
             }
             br.close();
@@ -83,7 +83,7 @@ public class PeerProcess {
             while (itr.hasNext()) {
                 Peers peerInfo = remotePeerInfo.get(itr.next());
                 if (peerInfo.getPeerID() == Integer.parseInt(peerID)) {
-                    peerProcess.LISTENING_PORT = Integer.parseInt(peerInfo.getListeningPort());
+                    peerProcess.LISTENING_PORT = peerInfo.getListeningPort();
                     peerProcess.peerProcessIndex = peerInfo.getPeerIndex();
 
                     if (peerInfo.isFirstPeer()) {
@@ -96,7 +96,7 @@ public class PeerProcess {
             //Initialize Bitfield
 
             if (flagForFirstPeer) {
-                String msg = "First peer listening on port 8008, peerID: " + peerID;
+                String msg = "First peer listening on port 6008, peerID: " + peerID;
                 String lvl = "Info";
                 log.WriteToLog(msg, lvl);
                 startServer(peerProcess, peerID);
@@ -109,7 +109,7 @@ public class PeerProcess {
                     Peers peer = remotePeerInfo.get(itr1.next());
                     if (peerProcess.peerProcessIndex > peer.getPeerIndex()) {
 
-                        RemoteP2PThread remotePeerThread = new RemoteP2PThread(peer.getPeerID(), peer.getHostName(), Integer.parseInt(peer.getListeningPort()), 1);
+                        RemoteP2PThread remotePeerThread = new RemoteP2PThread(peer.getPeerID(), peer.getHostName(), peer.getListeningPort(), 1);
                         remotePeerThread.start();
 
                     }
@@ -126,8 +126,8 @@ public class PeerProcess {
 
     private static void startServer(PeerProcess peerProcess, String peerID) {
         try {
-            peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
-            peerProcess.listeningThread = new P2PServerThread(peerProcess.listeningSocket, peerID);
+            //peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
+            peerProcess.listeningThread = new P2PServerThread(peerProcess.LISTENING_PORT, peerID);
             peerProcess.listeningThread.start();
             String msg = "Created Peer" + peerID;
             String lvl = "Info";

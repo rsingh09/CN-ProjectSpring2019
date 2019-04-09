@@ -1,4 +1,4 @@
-package bittorrent;
+//package bittorrent;
 
 /**
  * @author kaush
@@ -7,23 +7,15 @@ package bittorrent;
 public class Peers {
     int peerID;
     String hostName;
-    String listeningPort;
+    int listeningPort;
     int fileInfo;
     boolean hasFile;
     int peerIndex;
 
-//	public Peers(int id, String host, String port, boolean hasFile, int lineNumber) {
-//		this.peerID = id;
-//		this.hostName = host;
-//		this.listeningPort = port;
-//		this.hasFile = hasFile;
-//		this.peerIndex = lineNumber;
-//	}
-
 	/*
 		Constructor
 	*/
-    public Peers(int id, String host, String port, int fileInfo, int lineNumber) {
+    public Peers(int id, String host, int port, int fileInfo, int lineNumber) {
         this.peerID = id;
         this.hostName = host;
         this.listeningPort = port;
@@ -33,7 +25,7 @@ public class Peers {
 	/*
 		Constructor
 	*/
-    public Peers(int peerID, String hostName, String listeningPort, boolean hasFile) {
+    public Peers(int peerID, String hostName, int listeningPort, boolean hasFile) {
         super();
         this.peerID = peerID;
         this.hostName = hostName;
@@ -69,15 +61,11 @@ public class Peers {
         this.hostName = hostName;
     }
 
-    public String getListeningPort() {
+    public int getListeningPort() {
         return listeningPort;
     }
 
-//	public int getPeerID() {
-//		return peerID;
-//	}
-
-    public void setListeningPort(String listeningPort) {
+    public void setListeningPort(int listeningPort) {
         this.listeningPort = listeningPort;
     }
 
