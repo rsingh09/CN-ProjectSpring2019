@@ -9,7 +9,7 @@ import java.nio.channels.SocketChannel;
 
 public class peerProcess {
 	private static EchoServer server;
-	static BitTorrentLogger log = new BitTorrentLogger();
+	//static BitTorrentLogger log = new BitTorrentLogger();
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
@@ -35,9 +35,10 @@ public class peerProcess {
 		 * System.out.println(p1.peerIndex); // System.out.println(p1.listeningPort); //
 		 * System.out.println("******************************"); // }
 		 */
+
+		createServer(UtilityClass.getCurrentPeerInfo());
 		for (int id : UtilityClass.allPeerMap.keySet()) {
 			if (id == UtilityClass.currentPeerID) {
-				createServer(UtilityClass.allPeerMap.get(id));
 				break;
 			} else {
 				createSocketChannels(UtilityClass.allPeerMap.get(id));
@@ -46,6 +47,7 @@ public class peerProcess {
 		}
 	}
 
+
 	private static void createServer(PeerInfo peerInfo) {
 		try {
 			// peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
@@ -53,7 +55,7 @@ public class peerProcess {
 			server.start();
 			String msg = "Created Peer" + peerInfo.peerID;
 			String lvl = "Info";
-			log.WriteToLog(peerInfo.peerID, msg, lvl);
+			//log.WriteToLog(peerInfo.peerID, msg, lvl);
 //	            return 0;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -61,12 +63,10 @@ public class peerProcess {
 	}
 
 	private static void createSocketChannels(PeerInfo peerInfo) {
-		EchoClient client = new EchoClient(peerInfo.hostName, peerInfo.listeningPort);
-
+		EchoClient client = new EchoClient(peerInfo);
 		// client = SocketChannel.open(new InetSocketAddress(peerInfo.hostName,
 		// peerInfo.listeningPort));
 		ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
-		// peerInfo.socketChannel = client;
 		HandshakeMessage handshakeMsg = new HandshakeMessage(UtilityClass.currentPeerID);
 		// ByteBuffer buf = transformObject(handshakeMsg);
 		client.sendMessage(handshakeMsg);

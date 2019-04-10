@@ -14,13 +14,14 @@ public class UtilityClass
 	public static ConcurrentHashMap<Integer, PeerInfo> allPeerMap = new ConcurrentHashMap<Integer,PeerInfo>();
 	public static Selector selectorP2P;
 	public static int currentPeerID;
-	
+	public static PeerInfo getCurrentPeerInfo()
+	{
+		return allPeerMap.get(currentPeerID);
+	}
 	public static Object ReadFromBuffer (byte[] buffer) throws ClassNotFoundException, IOException
 	{
 		//byte[] arr = new byte[buffer.remaining()];
-		System.out.println("1");
 		ByteArrayInputStream in = new ByteArrayInputStream(buffer);
-		System.out.println("2");
 	    ObjectInputStream is = new ObjectInputStream(in);
 	    return is.readObject();
 	}

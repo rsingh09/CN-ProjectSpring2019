@@ -60,9 +60,22 @@ public class EchoServer extends Thread{
 		SocketChannel client = (SocketChannel) key.channel();
 		client.read(buffer);
 		// Here we will deploy the message to the concurrent linked queue.
-		buffer.flip();
-		client.write(buffer);
+		//Buffer has my message
+		//Write message from buffer to Message Handler
+		byte[] bytes = null;
+		bytes = buffer.array();
 		buffer.clear();
+		try {
+			Object obj = UtilityClass.ReadFromBuffer(bytes);
+			MessageHandler messageHandler = new MessageHandler();
+			messageHandler.messagesQueue.add(obj);
+			messageHandler.start();
+			//buffer.flip();
+			//client.write(buffer);
+			//buffer.clear();
+		} catch ( Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	private static void register(Selector selector, ServerSocketChannel serverSocket) throws IOException {

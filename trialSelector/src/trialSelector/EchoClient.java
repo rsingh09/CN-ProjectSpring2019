@@ -33,18 +33,20 @@ public class EchoClient {
 //        }
 //    }
 
-    public EchoClient(String hostName, int listeningPort) {
-    	try {
-			client = SocketChannel.open(new InetSocketAddress(hostName, listeningPort));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    public EchoClient(PeerInfo peerInfoObj) {
+        try {
+            client = SocketChannel.open(new InetSocketAddress(peerInfoObj.hostName, peerInfoObj.listeningPort));
+            peerInfoObj.socketChannel = client;
+            System.out.println("Socket Channel for the Peer ID "+peerInfoObj.peerID + peerInfoObj.socketChannel);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
-		// TODO Auto-generated constructor stub
-	}
-    
-	public String sendMessage(HandshakeMessage msg) {
+        // TODO Auto-generated constructor stub
+    }
+
+    public String sendMessage(HandshakeMessage msg) {
         String response = null;
         try {
             buffer = transformObject(msg);
@@ -52,7 +54,7 @@ public class EchoClient {
             buffer.clear();
             client.read(buffer);
             response = new String(buffer.array()).trim();
-            System.out.println("response=" + response);
+            //System.out.println("response=" + response);
             buffer.clear();
         } catch (IOException e) {
             e.printStackTrace();
@@ -60,13 +62,13 @@ public class EchoClient {
         return response;
 
     }
-	private ByteBuffer transformObject(HandshakeMessage handshakeMsg) throws IOException {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(bos);
-		oos.writeObject(handshakeMsg);
-		oos.flush();
-		byte[] data = bos.toByteArray();
-		ByteBuffer buf = ByteBuffer.wrap(data);
-		return buf;
-	}
+    private ByteBuffer transformObject(HandshakeMessage handshakeMsg) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(handshakeMsg);
+        oos.flush();
+        byte[] data = bos.toByteArray();
+        ByteBuffer buf = ByteBuffer.wrap(data);
+        return buf;
+    }
 }

@@ -16,20 +16,23 @@ public class PeerInfo {
     int peerIndex;
     public SocketChannel socketChannel;
     public ByteBuffer socketBuffer;
+    Boolean isHandshakeCompleted;
 
-	/*
-		Constructor
-	*/
+
+    /*
+        Constructor
+    */
     public PeerInfo(int id, String host, int port, int fileInfo, int lineNumber) {
         this.peerID = id;
         this.hostName = host;
         this.listeningPort = port;
         this.fileInfo = fileInfo;
         this.peerIndex = lineNumber;
+        this.isHandshakeCompleted = false;
     }
-	/*
-		Constructor
-	*/
+    /*
+        Constructor
+    */
     public PeerInfo(int peerID, String hostName, int listeningPort, boolean hasFile) {
         super();
         this.peerID = peerID;
