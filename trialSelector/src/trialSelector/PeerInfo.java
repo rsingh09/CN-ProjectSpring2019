@@ -1,29 +1,26 @@
-package bittorrent;
+package trialSelector;
+
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 /**
  * @author kaush
  * TO-DO populate all the attributes of Remote Peer Info
  */
-public class Peers {
+public class PeerInfo {
     int peerID;
     String hostName;
-    String listeningPort;
+    int listeningPort;
     int fileInfo;
     boolean hasFile;
     int peerIndex;
-
-//	public Peers(int id, String host, String port, boolean hasFile, int lineNumber) {
-//		this.peerID = id;
-//		this.hostName = host;
-//		this.listeningPort = port;
-//		this.hasFile = hasFile;
-//		this.peerIndex = lineNumber;
-//	}
+    public SocketChannel socketChannel;
+    public ByteBuffer socketBuffer;
 
 	/*
 		Constructor
 	*/
-    public Peers(int id, String host, String port, int fileInfo, int lineNumber) {
+    public PeerInfo(int id, String host, int port, int fileInfo, int lineNumber) {
         this.peerID = id;
         this.hostName = host;
         this.listeningPort = port;
@@ -33,7 +30,7 @@ public class Peers {
 	/*
 		Constructor
 	*/
-    public Peers(int peerID, String hostName, String listeningPort, boolean hasFile) {
+    public PeerInfo(int peerID, String hostName, int listeningPort, boolean hasFile) {
         super();
         this.peerID = peerID;
         this.hostName = hostName;
@@ -69,15 +66,11 @@ public class Peers {
         this.hostName = hostName;
     }
 
-    public String getListeningPort() {
+    public int getListeningPort() {
         return listeningPort;
     }
 
-//	public int getPeerID() {
-//		return peerID;
-//	}
-
-    public void setListeningPort(String listeningPort) {
+    public void setListeningPort(int listeningPort) {
         this.listeningPort = listeningPort;
     }
 
