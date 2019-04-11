@@ -88,6 +88,16 @@ public class peerProcess {
 			e.printStackTrace();
 		}
 	}
+	
+	private static void determineKPreferredNeighbour()
+	{
+		
+	}
+	
+	private static void determineOptimisticallyUnchoke()
+	{
+		
+	}
 
 	private static void createSocketChannels(PeerInfo peerInfo) {
 		EchoClient client = new EchoClient(peerInfo);

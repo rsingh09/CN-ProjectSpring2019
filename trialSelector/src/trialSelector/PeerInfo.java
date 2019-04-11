@@ -15,6 +15,7 @@ public class PeerInfo {
     int fileInfo;
     int hasFile;
     int peerIndex;
+    int peerState;
     Boolean isHandshakeCompleted;
     public BitSet bitfield;
 

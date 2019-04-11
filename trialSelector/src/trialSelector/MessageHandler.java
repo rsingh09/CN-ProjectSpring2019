@@ -22,9 +22,9 @@ public class MessageHandler extends Thread{
                 System.out.println("Polling for Handshake Messages ");
                 handleHandshakeMessage((HandshakeMessage)receivedMessage);
 
-            } else if(receivedMessage instanceof ActualMessage){
+            } else if(receivedMessage instanceof Message){
                 System.out.println("Polling for Actual Messages ");
-                handleBitfieldMessage((ActualMessage) receivedMessage);
+                handleBitfieldMessage((Message) receivedMessage);
             }
 
         }
@@ -43,7 +43,7 @@ public class MessageHandler extends Thread{
 
             //If I have complete file/any of one bits is set
             byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
-            ActualMessage actualMessage = new ActualMessage();
+            Message actualMessage = new Message(currentPeerID,MessageTypes.BITFIELD);
             actualMessage.setMessageType(MessageTypes.BITFIELD);
             actualMessage.messagePayload = bitfieldByteArray;
             ch.write(transformActualObject(actualMessage));
@@ -52,7 +52,7 @@ public class MessageHandler extends Thread{
             e.printStackTrace();
         }}
 
-        private void handleBitfieldMessage(ActualMessage message){
+        private void handleBitfieldMessage(Message message){
             try {
                 System.out.println("Peer ID of the peer receiving the Bitfield" + currentPeerID);
             //Starting this part as peer two. Right now, peer 1 has written to my message queue
@@ -62,7 +62,7 @@ public class MessageHandler extends Thread{
                //compare the message that I have received and send an interested message to the guy who actually sent me his bitfield
                 //byte[] bitfieldByteArray = myOwnBitfield.toByteArray();
                 //We will send interested message to him
-                ActualMessage actualMessage = new ActualMessage();
+                Message actualMessage = new Message(currentPeerID, message.getMessageType());
                 actualMessage.setMessageType(MessageTypes.INTERESTED);
                 System.out.println("Peer ID sending the interested message "+ currentPeerID);
                 ch.write(transformActualObject(actualMessage));
@@ -76,5 +76,3 @@ public class MessageHandler extends Thread{
         }
 
 }
-
-
