@@ -34,6 +34,15 @@ public class UtilityClass
 		ByteBuffer buf = ByteBuffer.wrap(data);
 		return buf;
 	}
+	public static ByteBuffer transformObject(Message msg) throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ObjectOutputStream oos = new ObjectOutputStream(bos);
+		oos.writeObject(msg);
+		oos.flush();
+		byte[] data = bos.toByteArray();
+		ByteBuffer buf = ByteBuffer.wrap(data);
+		return buf;
+	}
 	public static ByteBuffer transformObject(String msg) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(bos);

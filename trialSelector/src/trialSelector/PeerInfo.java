@@ -14,6 +14,7 @@ public class PeerInfo {
     int fileInfo;
     boolean hasFile;
     int peerIndex;
+    int peerState;
     public SocketChannel socketChannel;
     public ByteBuffer socketBuffer;
     Boolean isHandshakeCompleted;
