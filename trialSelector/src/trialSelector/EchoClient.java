@@ -36,8 +36,6 @@ public class EchoClient {
     public EchoClient(PeerInfo peerInfoObj) {
         try {
             client = SocketChannel.open(new InetSocketAddress(peerInfoObj.hostName, peerInfoObj.listeningPort));
-            peerInfoObj.socketChannel = client;
-            System.out.println("Socket Channel for the Peer ID "+peerInfoObj.peerID + peerInfoObj.socketChannel);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -53,8 +51,8 @@ public class EchoClient {
             client.write(buffer);
             buffer.clear();
             client.read(buffer);
-            response = new String(buffer.array()).trim();
-            //System.out.println("response=" + response);
+            //response = new String(buffer.array()).trim();
+            System.out.println("Received Reply");
             buffer.clear();
         } catch (IOException e) {
             e.printStackTrace();

@@ -67,7 +67,7 @@ public class EchoServer extends Thread{
 		buffer.clear();
 		try {
 			Object obj = UtilityClass.ReadFromBuffer(bytes);
-			MessageHandler messageHandler = new MessageHandler();
+			MessageHandler messageHandler = new MessageHandler((SocketChannel)key.channel());
 			messageHandler.messagesQueue.add(obj);
 			messageHandler.start();
 			//buffer.flip();
