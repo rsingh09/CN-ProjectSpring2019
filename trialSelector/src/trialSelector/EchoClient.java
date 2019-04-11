@@ -27,14 +27,24 @@ public class EchoClient {
             buffer = UtilityClass.transformObject(msg);
             client.write(buffer);
             buffer.clear();
+
+            byte[] bytes = null;
+            bytes = buffer.array();
+
             client.read(buffer);
-            //response = new String(buffer.array()).trim();
-            System.out.println("Received Reply");
+            Object obj = UtilityClass.ReadFromBuffer(bytes);
+            MessageHandler messageHandler = new MessageHandler(client);
+            messageHandler.messagesQueue.add(obj);
+            messageHandler.start();
+
             buffer.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         return response;
 
-    }
+     }
 }

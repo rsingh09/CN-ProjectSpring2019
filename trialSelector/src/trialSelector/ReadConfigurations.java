@@ -37,7 +37,6 @@ public class ReadConfigurations
             BufferedReader in = new BufferedReader(new FileReader("Common.cfg"));
             while((newLine = in.readLine()) != null){
                 String[] params = newLine.split("\\s+");
-                System.out.println(params[0]);
                 switch(params[0]) {
                     case "NumberOfPreferredNeighbors":
                         CommonProperties.numberOfPreferredNeighbors = Integer.parseInt(params[1]);
