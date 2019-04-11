@@ -66,11 +66,13 @@ public class MessageHandler extends Thread implements PeerConstants {
 
 	private void handlePiece() {
 		// TODO Auto-generated method stub
+		//send after request message
 
 	}
 
 	private void handleRequest() {
 		// TODO Auto-generated method stub
+		//send after unchoke message
 
 	}
 
@@ -107,7 +109,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void sendUnChoke() {
-
+        //create choke unchoke thread
 		System.out.println(UtilityClass.currentPeerID + " sending UNCHOKE message to Peer " + remotePeerID);
 		Message msg = new Message(UtilityClass.currentPeerID, UNCHOKE);
 		try {
@@ -120,6 +122,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void sendChoke() {
+		//send from choke/unchoke thread
 		System.out.println(UtilityClass.currentPeerID + " sending CHOKE message to Peer " + remotePeerID);
 		Message d = new Message(UtilityClass.currentPeerID, CHOKE);
 		try {
@@ -130,7 +133,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 		}
 	}
 	private void sendInterested() {
-
+            //send after receiving bitfield and checking if you don't have that any piece or after receiving have message vice versa
 		System.out.println(UtilityClass.currentPeerID + " sending UNCHOKE message to Peer " + remotePeerID);
 		Message msg = new Message(UtilityClass.currentPeerID, INTERESTED);
 		try {
@@ -143,6 +146,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void sendNotInterested() {
+		//after receiving have message
 		System.out.println(UtilityClass.currentPeerID + " sending CHOKE message to Peer " + remotePeerID);
 		Message msg = new Message(UtilityClass.currentPeerID, NOT_INTERESTED);
 		try {
