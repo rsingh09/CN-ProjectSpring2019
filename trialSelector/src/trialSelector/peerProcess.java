@@ -64,6 +64,7 @@ public class peerProcess {
 			if (id == UtilityClass.currentPeerID) {
 				break;
 			} else {
+				System.out.println("Multiple id : " + id);
 				createSocketChannels(UtilityClass.allPeerMap.get(id));
 				System.out.println("id : " + id);
 			}
@@ -94,16 +95,9 @@ public class peerProcess {
 
 	private static void createSocketChannels(PeerInfo peerInfo) {
 		EchoClient client = new EchoClient(peerInfo);
-		// client = SocketChannel.open(new InetSocketAddress(peerInfo.hostName,
-		// peerInfo.listeningPort));
-		//ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
-		//if 1001's handshake is not completed
-
-		HandshakeMessage handshakeMsg = new HandshakeMessage(UtilityClass.currentPeerID);
-		// ByteBuffer buf = transformObject(handshakeMsg);
-
-		UtilityClass.allPeerMap.get(peerInfo.peerID).isHandshakeSent = true;
-		client.sendMessage(handshakeMsg);
+		client.start();
+		
+		//client.sendMessage(handshakeMsg);
 
 	}
 

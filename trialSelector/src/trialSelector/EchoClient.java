@@ -5,13 +5,15 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-public class EchoClient {
-	private static SocketChannel client;
-	private static ByteBuffer buffer;
+public class EchoClient extends Thread{
+	private SocketChannel client;
+	private ByteBuffer buffer;
+	private PeerInfo peerInfo;
 	// private static EchoClient instance;
 
 	public EchoClient(PeerInfo peerInfoObj) {
 		try {
+			peerInfo = peerInfoObj;
 			client = SocketChannel.open(new InetSocketAddress(peerInfoObj.hostName, peerInfoObj.listeningPort));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -20,7 +22,14 @@ public class EchoClient {
 		buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
 		// TODO Auto-generated constructor stub
 	}
+	public void run()
+	{
+		HandshakeMessage handshakeMsg = new HandshakeMessage(UtilityClass.currentPeerID);
+		// ByteBuffer buf = transformObject(handshakeMsg);
 
+		UtilityClass.allPeerMap.get(peerInfo.peerID).isHandshakeSent = true;
+		sendMessage(handshakeMsg);
+	}
 	public String sendMessage(HandshakeMessage msg) {
 		String response = null;
 		try {
@@ -38,8 +47,6 @@ public class EchoClient {
 				messageHandler.messagesQueue.add(obj);
 				messageHandler.start();
 			}
-//            buffer.clear();
-//            buffer.flip();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {

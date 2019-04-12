@@ -130,6 +130,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 			System.out.println("we are here");
 			sendInterested(message.PeerID);
 		} else {
+			System.out.println("we are here because we don't want to be there");
 			sendNotInterested(message.PeerID);
 		}
 
@@ -201,13 +202,13 @@ public class MessageHandler extends Thread implements PeerConstants {
 			UtilityClass.allPeerMap.get(recievedMsg.PeerID).bitfield.set(index);
 			if(UtilityClass.getCurrentPeerInfo().bitfield.get(index) == true)
 			{
-				System.out.println(recievedMsg.PeerID + " has an interesting piece, yummm yummm");
-				sendInterested(recievedMsg.PeerID);
+				System.out.println(recievedMsg.PeerID + " has nothing I don't got");
+				sendNotInterested(recievedMsg.PeerID);	
 			}
 			else
 			{
-				System.out.println(recievedMsg.PeerID + " has nothing I don't got");
-				sendNotInterested(recievedMsg.PeerID);				
+				System.out.println(recievedMsg.PeerID + " has an interesting piece, yummm yummm");
+				sendInterested(recievedMsg.PeerID);			
 			}
 		}
 		else 

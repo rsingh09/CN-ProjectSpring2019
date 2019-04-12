@@ -71,9 +71,6 @@ public class EchoServer extends Thread {
 			MessageHandler messageHandler = new MessageHandler((SocketChannel) key.channel(), buffer);
 			messageHandler.messagesQueue.add(obj);
 			messageHandler.start();
-			// buffer.flip();
-			// client.write(buffer);
-			// buffer.clear();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

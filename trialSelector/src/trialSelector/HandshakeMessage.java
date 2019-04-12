@@ -20,7 +20,6 @@ public class HandshakeMessage implements Serializable {
 			e.printStackTrace();
 		}
 	}
-
 	public byte[] getZeroBits() {
 		return zeroBits;
 	}
