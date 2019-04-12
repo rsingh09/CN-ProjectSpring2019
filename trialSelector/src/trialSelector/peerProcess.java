@@ -61,8 +61,6 @@ public class peerProcess {
 		});
 
 
-
-		System.out.println(UtilityClass.totalSplitParts);
 		createServer(UtilityClass.getCurrentPeerInfo());
 		for (int id : UtilityClass.allPeerMap.keySet()) {
 			if (id == UtilityClass.currentPeerID) {
@@ -105,11 +103,13 @@ public class peerProcess {
 		// peerInfo.listeningPort));
 		//ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
 		//if 1001's handshake is not completed
-		if(!peerInfo.isHandshakeCompleted){
-			HandshakeMessage handshakeMsg = new HandshakeMessage(UtilityClass.currentPeerID);
-			// ByteBuffer buf = transformObject(handshakeMsg);
-			client.sendMessage(handshakeMsg);
-		}
+
+		HandshakeMessage handshakeMsg = new HandshakeMessage(UtilityClass.currentPeerID);
+		// ByteBuffer buf = transformObject(handshakeMsg);
+
+		UtilityClass.allPeerMap.get(peerInfo.peerID).isHandshakeSent = true;
+		client.sendMessage(handshakeMsg);
+
 		// peerInfo.socketBuffer = buffer;
 		// client.write(buf);
 		// buffer.clear();

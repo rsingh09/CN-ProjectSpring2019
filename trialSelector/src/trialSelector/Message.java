@@ -15,6 +15,9 @@ public class Message implements Serializable, PeerConstants {
 		msgType = messageType;
 		this.messagePayload = null;
 	}
+	public Message(MessageTypes messageTypes){
+		msgType = messageTypes;
+	}
 
 	public int getMessageLength() {
 		return messageLength;

@@ -16,7 +16,7 @@ public class PeerInfo {
     int hasFile;
     int peerIndex;
     int peerState;
-    Boolean isHandshakeCompleted;
+    Boolean isHandshakeSent;
     public BitSet bitfield;
 
 
@@ -29,7 +29,7 @@ public class PeerInfo {
         this.listeningPort = port;
         this.hasFile = hasFile;
         this.peerIndex = peerIndex;
-        this.isHandshakeCompleted = false;
+        this.isHandshakeSent = false;
         bitfield = new BitSet(UtilityClass.totalSplitParts);
     }
 

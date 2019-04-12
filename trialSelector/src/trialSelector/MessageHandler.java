@@ -18,61 +18,101 @@ public class MessageHandler extends Thread{
 
         if(!messagesQueue.isEmpty()){
             Object receivedMessage = messagesQueue.poll();
+            System.out.println(messagesQueue.size());
             if(receivedMessage instanceof HandshakeMessage){
-                System.out.println("Polling for Handshake Messages ");
                 handleHandshakeMessage((HandshakeMessage)receivedMessage);
 
+
             } else if(receivedMessage instanceof Message){
-                System.out.println("Polling for Actual Messages ");
-                handleBitfieldMessage((Message) receivedMessage);
+                switch(((Message)receivedMessage).getMessageType()){
+                    case BITFIELD:
+                        System.out.println("Handle Bitfield Message");
+                        handleBitfieldMessage((Message) receivedMessage);
+                        break;
+
+                    case INTERESTED:
+                        handleInterestedMessage();
+                        break;
+
+                }
             }
 
         }
     }
 
     private void handleHandshakeMessage(HandshakeMessage message) {
-        //message.peerID = 1001
-        //Current Peer ID = 1002
-        HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
         try {
-            System.out.println("Peer ID of the peer who is processing the handshake message"+ message.getPeerID());
 
-            ch.write(transformObject(reply));
+            System.out.println(currentPeerID + " is polling for handshake messages ");
+            System.out.println(( message).getPeerID()+" is the peer ID I have to reply to");
+            if(!allPeerMap.get(message.getPeerID()).isHandshakeSent){
+                HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
+                ch.write(transformObject(reply));
+                allPeerMap.get(message.getPeerID()).isHandshakeSent = true;
+                //Send Bitfield messsage only if my Bitset is not empty
+                if(!allPeerMap.get(currentPeerID).bitfield.isEmpty()){
+                    sendBitfieldMessage((message).getPeerID());
 
-            UtilityClass.allPeerMap.get(message.getPeerID()).isHandshakeCompleted = true;
-
-            //If I have complete file/any of one bits is set
-            byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
-            Message actualMessage = new Message(currentPeerID,MessageTypes.BITFIELD);
-            actualMessage.setMessageType(MessageTypes.BITFIELD);
-            actualMessage.messagePayload = bitfieldByteArray;
-            ch.write(transformActualObject(actualMessage));
-
-        }   catch (IOException e) {
+                }
+            }
+        } catch (IOException e) {
             e.printStackTrace();
         }}
 
         private void handleBitfieldMessage(Message message){
             try {
-                System.out.println("Peer ID of the peer receiving the Bitfield" + currentPeerID);
-            //Starting this part as peer two. Right now, peer 1 has written to my message queue
-            //I pick this bitfield message, compare it to my own bitfield and then send him whether I am interested in his data
-            if(message.getMessageType() == MessageTypes.BITFIELD){
-               BitSet myOwnBitfield =  allPeerMap.get(currentPeerID).bitfield;
-               //compare the message that I have received and send an interested message to the guy who actually sent me his bitfield
-                //byte[] bitfieldByteArray = myOwnBitfield.toByteArray();
-                //We will send interested message to him
-                Message actualMessage = new Message(currentPeerID, message.getMessageType());
-                actualMessage.setMessageType(MessageTypes.INTERESTED);
-                System.out.println("Peer ID sending the interested message "+ currentPeerID);
-                ch.write(transformActualObject(actualMessage));
+                System.out.println(currentPeerID + " is handling for Bitfield messages ");
+                if(message.messagePayload != null){
+                    PeerInfo remotePeer = allPeerMap.get(message.PeerID);
+                    remotePeer.bitfield = ((BitSet) BitSet.valueOf(message.messagePayload).clone());
+                    allPeerMap.put(message.PeerID, remotePeer);
+                }
 
-            }
+                int splitParts = totalSplitParts;
 
-            } catch(Exception e){
+                System.out.println("The number of split parts are " + splitParts);
+
+                BitSet currentPeerBitset = new BitSet(splitParts);
+                currentPeerBitset = (BitSet) allPeerMap.get(currentPeerID).bitfield.clone();
+
+
+                BitSet peerBitset = new BitSet(splitParts);
+                peerBitset = (BitSet) BitSet.valueOf(message.messagePayload).clone();
+
+                currentPeerBitset.flip(0,totalSplitParts);
+                currentPeerBitset.and(peerBitset);
+                if(!currentPeerBitset.isEmpty()) {sendInterestedMessage();
+                }
+
+                else {
+                    Message messageToSend = new Message(MessageTypes.NOT_INTERESTED);
+                    ch.write(UtilityClass.transformActualObject(messageToSend));
+                }
+
+            } catch(IOException e){
                 e.printStackTrace();
             }
 
         }
+
+    private void sendInterestedMessage() {
+    }
+
+    private void  handleInterestedMessage(){
+
+    }
+    private void sendBitfieldMessage(int remotePeerID) {
+        try{
+            System.out.println("Sending bitfield message from "+ currentPeerID + " to " + remotePeerID);
+            byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
+            Message actualMessage = new Message(currentPeerID, MessageTypes.BITFIELD);
+            actualMessage.setMessageType(MessageTypes.BITFIELD);
+            actualMessage.messagePayload = bitfieldByteArray;
+            ch.write(transformActualObject(actualMessage));
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
 }
