@@ -9,12 +9,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class UtilityClass
 {
 	public static ConcurrentHashMap<Integer, PeerInfo> allPeerMap = new ConcurrentHashMap<Integer,PeerInfo>();
 	public static ConcurrentHashMap<Integer, BitSet> bitField = new ConcurrentHashMap<Integer,BitSet>();
-
+	//public static ConcurrentHashMap<Integer, PeerInfo> intersetedPeers = new ConcurrentHashMap<Integer,PeerInfo>();
+	public static CopyOnWriteArrayList<Integer> intersetedPeers = new CopyOnWriteArrayList<Integer>();
+	public static CopyOnWriteArrayList<Integer> unChokedPeers = new CopyOnWriteArrayList<Integer>();
 	public static Selector selectorP2P;
 	public static int currentPeerID;
 	public static int totalSplitParts;

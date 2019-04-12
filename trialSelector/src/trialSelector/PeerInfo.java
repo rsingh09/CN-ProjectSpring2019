@@ -17,6 +17,7 @@ public class PeerInfo {
     int peerIndex;
     int peerState;
     Boolean isHandshakeSent;
+    int downloadRate = 0;
     public BitSet bitfield;
 
 
