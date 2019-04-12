@@ -39,7 +39,7 @@ public class UtilityClass
 		return buf;
 	}
 
-	public static ByteBuffer transformActualObject(Message actualMessage) throws IOException {
+	public static ByteBuffer transformObject(Message actualMessage) throws IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream(bos);
 		oos.writeObject(actualMessage);

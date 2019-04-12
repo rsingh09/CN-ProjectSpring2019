@@ -5,17 +5,17 @@ import java.io.Serializable;
 public class Message implements Serializable, PeerConstants {
 	int PeerID;
 	int messageLength;
-	MessageTypes msgType;
+	int msgType;
 	byte[] messagePayload;
 
-	public Message(int peerID, MessageTypes messageType) {
+	public Message(int peerID, int messageType) {
 		super();
 		PeerID = peerID;
 		//this.messageLength = messageLength;
 		msgType = messageType;
 		this.messagePayload = null;
 	}
-	public Message(MessageTypes messageTypes){
+	public Message(int messageTypes){
 		msgType = messageTypes;
 	}
 
@@ -27,11 +27,11 @@ public class Message implements Serializable, PeerConstants {
 		this.messageLength = messageLength;
 	}
 
-	public MessageTypes getMessageType() {
+	public int getMessageType() {
 		return msgType;
 	}
 
-	public void setMessageType(MessageTypes messageType) {
+	public void setMessageType(int messageType) {
 		msgType = messageType;
 	}
 

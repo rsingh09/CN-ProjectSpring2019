@@ -13,7 +13,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
-public class EchoServer extends Thread{
+public class EchoServer extends Thread {
 
 	public void run() {
 
@@ -27,7 +27,8 @@ public class EchoServer extends Thread{
 			serverSocket.configureBlocking(false);
 			serverSocket.register(UtilityClass.selectorP2P, SelectionKey.OP_ACCEPT);
 			ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
-			System.out.println("Peer " + UtilityClass.currentPeerID+" listening at: " + UtilityClass.allPeerMap.get(UtilityClass.currentPeerID).listeningPort);
+			System.out.println("Peer " + UtilityClass.currentPeerID + " listening at: "
+					+ UtilityClass.allPeerMap.get(UtilityClass.currentPeerID).listeningPort);
 			while (true) {
 				UtilityClass.selectorP2P.select();
 				Set<SelectionKey> selectedKeys = UtilityClass.selectorP2P.selectedKeys();
@@ -60,20 +61,20 @@ public class EchoServer extends Thread{
 		SocketChannel client = (SocketChannel) key.channel();
 		client.read(buffer);
 		// Here we will deploy the message to the concurrent linked queue.
-		//Buffer has my message
-		//Write message from buffer to Message Handler
+		// Buffer has my message
+		// Write message from buffer to Message Handler
 		byte[] bytes = null;
 		bytes = buffer.array();
 		buffer.clear();
 		try {
 			Object obj = UtilityClass.ReadFromBuffer(bytes);
-			MessageHandler messageHandler = new MessageHandler((SocketChannel)key.channel());
+			MessageHandler messageHandler = new MessageHandler((SocketChannel) key.channel());
 			messageHandler.messagesQueue.add(obj);
 			messageHandler.start();
-			//buffer.flip();
-			//client.write(buffer);
-			//buffer.clear();
-		} catch ( Exception e){
+			// buffer.flip();
+			// client.write(buffer);
+			// buffer.clear();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

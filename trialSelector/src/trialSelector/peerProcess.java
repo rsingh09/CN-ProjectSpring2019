@@ -1,7 +1,6 @@
 package trialSelector;
 
 import jdk.jshell.execution.Util;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -49,17 +48,16 @@ public class peerProcess {
 		UtilityClass.totalSplitParts = remainingBytes > 0 ? totalSplits +1 : totalSplits;
 
 		//Initialize my own bitfield
-		UtilityClass.allPeerMap.keySet().forEach(peerEntry -> {
-			PeerInfo infoObj = UtilityClass.allPeerMap.get(peerEntry);
+		for (Integer peerID : UtilityClass.allPeerMap.keySet())
+		{
+			PeerInfo infoObj = UtilityClass.allPeerMap.get(peerID);
 			if(infoObj.hasFile == 1){
 
 				for(int i=0 ; i < UtilityClass.totalSplitParts; i++){
 					infoObj.bitfield.set(i);
-
 				}
 			}
-		});
-
+		};
 
 		createServer(UtilityClass.getCurrentPeerInfo());
 		for (int id : UtilityClass.allPeerMap.keySet()) {
@@ -75,13 +73,10 @@ public class peerProcess {
 
 	private static void createServer(PeerInfo peerInfo) {
 		try {
-			// peerProcess.listeningSocket = new ServerSocket(peerProcess.LISTENING_PORT);
 			server = new EchoServer();
 			server.start();
 			String msg = "Created Peer" + peerInfo.peerID;
 			String lvl = "Info";
-			//log.WriteToLog(peerInfo.peerID, msg, lvl);
-//	            return 0;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -109,10 +104,6 @@ public class peerProcess {
 
 		UtilityClass.allPeerMap.get(peerInfo.peerID).isHandshakeSent = true;
 		client.sendMessage(handshakeMsg);
-
-		// peerInfo.socketBuffer = buffer;
-		// client.write(buf);
-		// buffer.clear();
 
 	}
 
