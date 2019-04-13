@@ -5,300 +5,343 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
-	SocketChannel ch;
-	ByteBuffer buffer;
-	private static BitTorrentLogger logger;
+    private static BitTorrentLogger logger;
+    private SocketChannel socketChannel;
+    private ByteBuffer buffer;
+    ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();
 
-	public MessageHandler(SocketChannel keyChannel,ByteBuffer buffer) {
-		ch = keyChannel;
-		this.buffer = buffer;
-	}
+    public MessageHandler(SocketChannel keyChannel, ByteBuffer buffer) {
+        socketChannel = keyChannel;
+        this.buffer = buffer;
+    }
 
-	ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();
+    public void run() {
 
-	public void run() {
+        if (!messagesQueue.isEmpty()) {
+            Object receivedMessage = messagesQueue.poll();
+            System.out.println(messagesQueue.size());
+            if (receivedMessage instanceof HandshakeMessage) {
+                handleHandshakeMessage((HandshakeMessage) receivedMessage);
 
-		if (!messagesQueue.isEmpty()) {
-			Object receivedMessage = messagesQueue.poll();
-			System.out.println(messagesQueue.size());
-			if (receivedMessage instanceof HandshakeMessage) {
-				handleHandshakeMessage((HandshakeMessage) receivedMessage);
+            } else if (receivedMessage instanceof Message) {
+                Message msg = (Message) receivedMessage;
+                switch (msg.getMessageType()) {
+                    case BITFIELD:
+                        handleBitfieldMessage(msg);
+                        break;
+                    case INTERESTED:
+                        handleInterestedMessage(msg.PeerID);
+                        break;
+                    case NOT_INTERESTED:
+                        handleNotInterestedMessage(msg.PeerID);
+                        break;
+                    case CHOKE:
+                        handleChokeMessage(msg.PeerID);
+                        break;
+                    case UNCHOKE:
+                        handleUnchokeMessage(msg.PeerID);
+                        break;
+                    case HAVE:
+                        handleHaveMessage(msg);
+                        break;
+                    case REQUEST:
+                        handleRequestMessage(msg);
+                        break;
+                    case PIECE:
+                        handlePieceMessage(msg);
+                        break;
+                    default:
+                        try {
+                            throw new BitTorrentExceptions("Invalid message type");
+                        } catch (BitTorrentExceptions e) {
+                            logger.log(e.getMessage(), Level.SEVERE);
+                        }
+                }
+            }
+        }
+    }
 
-			} else if (receivedMessage instanceof Message) {
-				Message msg = (Message) receivedMessage;
-				switch (msg.getMessageType()) {
-				case BITFIELD:
-					System.out.println("Handle Bitfield Message");
-					handleBitfieldMessage(msg);
-					break;
-				case INTERESTED:
-					handleInterestedMessage(msg.PeerID);
-					break;
-				case NOT_INTERESTED:
-					handleNotInterestedMessage(msg.PeerID);
-					break;
-				case CHOKE:
-					handleChokeMessage(msg.PeerID);
-					break;
-				case UNCHOKE:
-					handleUnchokeMessage(msg.PeerID);
-					break;
-				case HAVE:
-					handleHaveMessage(msg);
-					break;
-				case REQUEST:
-					handleRequestMessage(msg);
-					break;
-				case PIECE:
-					handlePieceMessage(msg);
-					break;
-				default:
-					try {
-						throw new BitTorrentExceptions("Invalid message type");
-					} catch (BitTorrentExceptions e) {
-						// TODO Auto-generated catch block replace with log file
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
+    private void handleUnchokeMessage(int remotePeerID) {
+//		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Unchoked list");
+//		UtilityClass.unChokedPeers.add(remotePeerID);
+        logger.log("Size of interestedPeers list after handling unchoke msg: " + UtilityClass.unChokedPeers.size(), Level.WARNING);
+        sendRequestMessage(remotePeerID);
 
-	private void handleUnchokeMessage(int remotePeerID) {
-		// TODO Auto-generated method stub
-		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Unchoked list");
-		UtilityClass.unChokedPeers.add(remotePeerID);
-		logger.log("Size of interestedPeers list after handling unchoke msg: "+ UtilityClass.unChokedPeers.size(), Level.WARNING);
+    }
 
-	}
+    private void sendRequestMessage(int remotePeerId) {
+        int noOfsplits = totalSplitParts;
+        PeerInfo currentPeer = allPeerMap.get(currentPeerID);
 
-	private void handleChokeMessage(int remotePeerID) {
-		// TODO Auto-generated method stub
-		System.out.println("Removing" + remotePeerID + " to " + currentPeerID + "Interested list");
-		UtilityClass.unChokedPeers.remove(remotePeerID);
-	}
+        BitSet currentPeerBitset = new BitSet(noOfsplits);
+        currentPeerBitset = (BitSet) currentPeer.bitfield.clone();
 
-	private void handleHandshakeMessage(HandshakeMessage message) {
-		try {
-			// this.remotePeerID = (message).getPeerID();
-			System.out.println(currentPeerID + " is polling for handshake messages ");
-			System.out.println((message).getPeerID() + " is the peer ID I have to reply to");
-			if (!allPeerMap.get(message.getPeerID()).isHandshakeSent) {
-				allPeerMap.get(message.getPeerID()).peerSocketChannel = ch;
-				HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
-				buffer = transformObject(reply);
-				writeToChannel();
-				allPeerMap.get(message.getPeerID()).isHandshakeSent = true;
-				// Send Bitfield messsage only if my Bitset is not empty
-				if (!allPeerMap.get(currentPeerID).bitfield.isEmpty()) {
-					sendBitfieldMessage((message).getPeerID());
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        logger.log("Current peer " + currentPeer.peerID + " bitset is " + currentPeerBitset, Level.INFO);
 
-	private void handleBitfieldMessage(Message message) {
+        BitSet remotePeerBitset = new BitSet(noOfsplits);
+        remotePeerBitset = (BitSet) allPeerMap.get(remotePeerId).bitfield.clone();
 
-		System.out.println(currentPeerID + " is handling for Bitfield messages ");
-		if (message.messagePayload != null) {
-			PeerInfo remotePeer = allPeerMap.get(message.PeerID);
-			remotePeer.bitfield = ((BitSet) BitSet.valueOf(message.messagePayload).clone());
-			allPeerMap.put(message.PeerID, remotePeer);
-		}
+        currentPeerBitset.flip(0, noOfsplits);
 
-		int splitParts = totalSplitParts;
+        currentPeerBitset.and(remotePeerBitset);
 
-		System.out.println("The number of split parts are " + splitParts);
+        logger.log("After flipping and AND is : " + currentPeerBitset, Level.INFO);
 
-		BitSet currentPeerBitset = new BitSet(splitParts);
-		currentPeerBitset = (BitSet) allPeerMap.get(currentPeerID).bitfield.clone();
+        logger.log(currentPeerID + " is sending the request message now", Level.INFO);
 
-		BitSet peerBitset = new BitSet(splitParts);
-		peerBitset = (BitSet) BitSet.valueOf(message.messagePayload).clone();
+        Random rand = new Random();
 
-		currentPeerBitset.flip(0, totalSplitParts);
-		currentPeerBitset.and(peerBitset);
-		if (!currentPeerBitset.isEmpty()) {
-			System.out.println("we are here");
-			sendInterested(message.PeerID);
-		} else {
-			System.out.println("we are here because we don't want to be there");
-			sendNotInterested(message.PeerID);
-		}
+        if (!currentPeerBitset.isEmpty()) {
+            while (true) {
+                int randIndex = rand.nextInt(noOfsplits);
+                if (currentPeerBitset.get(randIndex)) {
+                    logger.log("The index of the piece I am requesting is " + randIndex, Level.INFO);
+                    requestedPieces.add(randIndex);
+                    byte[] payload = ByteBuffer.allocate(4).putInt(randIndex).array();
+                    System.out.println(ByteBuffer.wrap(payload).getInt());
 
-	}
+                    Message msg = new Message(UtilityClass.currentPeerID, REQUEST);
+                    msg.messagePayload = payload;
 
-	private void handleInterestedMessage(Integer remotePeerID) {
-		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Interested list");
-		UtilityClass.intersetedPeers.add(remotePeerID);
+                    try {
+                        buffer = transformObject(msg);
+                        writeToChannel();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        logger.log(e.getMessage(), Level.SEVERE);
+                    }
 
-	}
+                    break;
+                }
+            }
+        }
+    }
 
-	private void handleNotInterestedMessage(Integer remotePeerID) {
-		System.out.println("Removing" + remotePeerID + " to " + currentPeerID + "Interested list");
-		UtilityClass.intersetedPeers.remove(remotePeerID);
+    private void handleChokeMessage(int remotePeerID) {
+        // TODO Auto-generated method stub
+        System.out.println("Removing" + remotePeerID + " to " + currentPeerID + "Interested list");
+        UtilityClass.unChokedPeers.remove(remotePeerID);
+    }
 
-	}
+    private void handleHandshakeMessage(HandshakeMessage message) {
+        try {
+            // this.remotePeerID = (message).getPeerID();
+//            System.out.println(currentPeerID + " is polling for handshake messages ");
+            System.out.println((message).getPeerID() + " is the peer ID I have to reply to");
+            if (!allPeerMap.get(message.getPeerID()).isHandshakeSent) {
+                allPeerMap.get(message.getPeerID()).peerSocketChannel = socketChannel;
+                HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
+                buffer = transformObject(reply);
+                writeToChannel();
+                allPeerMap.get(message.getPeerID()).isHandshakeSent = true;
+                // Send Bitfield messsage only if my Bitset is not empty
+                if (!allPeerMap.get(currentPeerID).bitfield.isEmpty()) {
+                    sendBitfieldMessage((message).getPeerID());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	private void sendBitfieldMessage(int remotePeerID) {
-		try {
-			System.out.println("Sending bitfield message from " + currentPeerID + " to " + remotePeerID);
-			byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
-			Message actualMessage = new Message(currentPeerID, BITFIELD);
-			actualMessage.setMessageType(BITFIELD);
-			actualMessage.messagePayload = bitfieldByteArray;
-			buffer = transformObject(actualMessage);
-			writeToChannel();
+    private void handleBitfieldMessage(Message message) {
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+        System.out.println(currentPeerID + " is handling for Bitfield messages ");
+        if (message.messagePayload != null) {
+            PeerInfo remotePeer = allPeerMap.get(message.PeerID);
+            remotePeer.bitfield = ((BitSet) BitSet.valueOf(message.messagePayload).clone());
+            allPeerMap.put(message.PeerID, remotePeer);
+        }
 
-	private void sendInterested(int remotePeerID) {
+        int splitParts = totalSplitParts;
 
-		System.out.println(UtilityClass.currentPeerID + " sending Interested message to Peer " + remotePeerID);
-		Message msg = new Message(UtilityClass.currentPeerID, INTERESTED);
-		try {
-			System.out.println("got till here");
-			buffer = transformObject(msg);
-			writeToChannel();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+        System.out.println("The number of split parts are " + splitParts);
 
-	private void sendNotInterested(int remotePeerID) {
+        BitSet currentPeerBitset = new BitSet(splitParts);
+        currentPeerBitset = (BitSet) allPeerMap.get(currentPeerID).bitfield.clone();
 
-		System.out.println(UtilityClass.currentPeerID + " sending Not-Interested message to Peer " + remotePeerID);
-		Message msg = new Message(UtilityClass.currentPeerID, NOT_INTERESTED);
-		try {
-			buffer = UtilityClass.transformObject(msg);
-			writeToChannel();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+        BitSet peerBitset = new BitSet(splitParts);
+        peerBitset = (BitSet) BitSet.valueOf(message.messagePayload).clone();
 
-	private void handleHaveMessage(Message recievedMsg) {
-		// TODO Auto-generated method stub
+        currentPeerBitset.flip(0, totalSplitParts);
+        currentPeerBitset.and(peerBitset);
+        if (!currentPeerBitset.isEmpty()) {
+            System.out.println("we are here");
+            sendInterested(message.PeerID);
+        } else {
+            System.out.println("we are here because we don't want to be there");
+            sendNotInterested(message.PeerID);
+        }
 
-		if (recievedMsg.messagePayload != null) {
-			byte[] payload = recievedMsg.messagePayload;
-			ByteArrayInputStream inputStream = new ByteArrayInputStream(payload);
-			inputStream.read(payload,0,4);
-			PeerInfo remotePeer = allPeerMap.get(recievedMsg.PeerID);
-			int index = ByteBuffer.wrap(payload).getInt();
-			UtilityClass.allPeerMap.get(recievedMsg.PeerID).bitfield.set(index);
-			if(UtilityClass.getCurrentPeerInfo().bitfield.get(index) == true)
-			{
-				System.out.println(recievedMsg.PeerID + " has nothing I don't got");
-				sendNotInterested(recievedMsg.PeerID);
-			}
-			else
-			{
-				System.out.println(recievedMsg.PeerID + " has an interesting piece, yummm yummm");
-				sendInterested(recievedMsg.PeerID);
-			}
-		}
-		else
-		{
-			try {
-				throw new BitTorrentExceptions("Something wrong in have message, payload is missing");
-			} catch (BitTorrentExceptions e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+    }
 
-	private void handleRequestMessage(Message recievedMsg) {
-		// TODO Auto-generated method stub
+    private void handleInterestedMessage(Integer remotePeerID) {
+        logger.log("Adding" + remotePeerID + " to " + currentPeerID + "Interested list", Level.INFO);
+        UtilityClass.intersetedPeers.add(remotePeerID);
+        logger.log("Sending unchoke msg to peer: " + remotePeerID, Level.INFO);
+        allPeerMap.get(remotePeerID).peerState = PeerState.UNCHOKED;
+        sendUnchokeMessage(remotePeerID);
+        unChokedPeers.add(remotePeerID);
 
-		if (recievedMsg.messagePayload != null) {
-			byte[] payload = recievedMsg.messagePayload;
-			ByteArrayInputStream inputStream = new ByteArrayInputStream(payload);
-			inputStream.read(payload,0,4);
-		}
-		else
-		{
-			try {
-				throw new BitTorrentExceptions("Something wrong in request message, payload is missing");
-			} catch (BitTorrentExceptions e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+    }
 
-	private void handlePieceMessage(Message receivedMsg) {
-		//
-		if (receivedMsg.messagePayload != null) {
-			byte[] payload = receivedMsg.messagePayload;
-			byte[] pieceIndex = new byte[4];
+    private void handleNotInterestedMessage(Integer remotePeerID) {
+        logger.log("Removing " + remotePeerID + " from " + currentPeerID + "' s interested list", Level.INFO);
+        UtilityClass.intersetedPeers.remove(remotePeerID);
+    }
 
-			ByteArrayInputStream bufferInput = new ByteArrayInputStream(payload);
-			bufferInput.read(pieceIndex,0,4);
+    private void sendBitfieldMessage(int remotePeerID) {
+        try {
+            logger.log("Sending bitfield message from " + currentPeerID + " to " + remotePeerID, Level.INFO);
+            byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
+            Message message = new Message(currentPeerID, BITFIELD);
+            message.messagePayload = bitfieldByteArray;
+            buffer = transformObject(message);
+            writeToChannel();
 
-			int in = ByteBuffer.wrap(pieceIndex).getInt();
-			allPeerMap.get(currentPeerID).bitfield.set(in);
-			allPeerMap.get(receivedMsg.PeerID).bitfield.set(in);
+        } catch (Exception e) {
+            logger.log(e.getMessage(), Level.SEVERE);
+        }
+    }
 
-			byte[] part = Arrays.copyOfRange(payload, 4, payload.length - 4);
-			FileOutputStream fileOutputStream;
+    private void sendInterested(int remotePeerID) {
 
-			try {
-				fileOutputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "peer_" + UtilityClass.currentPeerID + File.separator + in + ".splitPart");
-				fileOutputStream.write(part);
-				fileOutputStream.close();
+        System.out.println(UtilityClass.currentPeerID + " sending Interested message to Peer " + remotePeerID);
+        Message msg = new Message(UtilityClass.currentPeerID, INTERESTED);
+        try {
+            System.out.println("got till here");
+            buffer = transformObject(msg);
+            writeToChannel();
+        } catch (IOException e) {
+            logger.log(e.getMessage(), Level.SEVERE);
+        }
+    }
 
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+    private void sendUnchokeMessage(int remotePeerID) {
 
-			//TO-DO - logging, once the choking unchoking works
-			allPeerMap.keySet().forEach(peer-> {
-				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
-				if(!peerBitfield.get(in)){
-					//Send Have message
-					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
-					Message message = new Message(peer, HAVE);
-					message.messagePayload = havePayload;
-					try {
-						ch.write(UtilityClass.transformObject(message));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+        logger.log(UtilityClass.currentPeerID + " sending Interested message to Peer " + remotePeerID, Level.INFO);
+        Message msg = new Message(UtilityClass.currentPeerID, UNCHOKE);
+        try {
+            buffer = transformObject(msg);
+            writeToChannel();
+        } catch (IOException e) {
+            logger.log(e.getMessage(), Level.SEVERE);
+        }
+    }
 
-				}
-			});
+    private void sendNotInterested(int remotePeerID) {
 
-		}
-	}
+        System.out.println(UtilityClass.currentPeerID + " sending Not-Interested message to Peer " + remotePeerID);
+        Message msg = new Message(UtilityClass.currentPeerID, NOT_INTERESTED);
+        try {
+            buffer = UtilityClass.transformObject(msg);
+            writeToChannel();
+        } catch (IOException e) {
+            logger.log(e.getMessage(), Level.SEVERE);
+        }
+    }
 
-	private void writeToChannel()
-	{
-		try {
-			ch.write(buffer);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		buffer.clear();
-		buffer.flip();
-	}
+    private void handleHaveMessage(Message receivedMsg) {
+
+        if (receivedMsg.messagePayload != null) {
+            byte[] payload = receivedMsg.messagePayload;
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(payload);
+            inputStream.read(payload, 0, 4);
+            int index = ByteBuffer.wrap(payload).getInt();
+            UtilityClass.allPeerMap.get(receivedMsg.PeerID).bitfield.set(index);
+            if (UtilityClass.getCurrentPeerInfo().bitfield.get(index)) {
+                System.out.println(receivedMsg.PeerID + " has nothing I don't got");
+                sendNotInterested(receivedMsg.PeerID);
+            } else {
+                System.out.println(receivedMsg.PeerID + " has an interesting piece, yummm yummm");
+                sendInterested(receivedMsg.PeerID);
+            }
+        } else {
+            try {
+                throw new BitTorrentExceptions("Something wrong in have message, payload is missing");
+            } catch (BitTorrentExceptions e) {
+                logger.log(e.getMessage(), Level.SEVERE);
+            }
+        }
+    }
+
+    private void handleRequestMessage(Message recievedMsg) {
+        // TODO Auto-generated method stub
+
+        if (recievedMsg.messagePayload != null) {
+            byte[] payload = recievedMsg.messagePayload;
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(payload);
+            inputStream.read(payload, 0, 4);
+        } else {
+            try {
+                throw new BitTorrentExceptions("Something wrong in request message, payload is missing");
+            } catch (BitTorrentExceptions e) {
+                logger.log(e.getMessage(), Level.SEVERE);
+            }
+        }
+    }
+
+    private void handlePieceMessage(Message receivedMsg) {
+        if (receivedMsg.messagePayload != null) {
+            byte[] payload = receivedMsg.messagePayload;
+            byte[] pieceIndex = new byte[4];
+
+            ByteArrayInputStream bufferInput = new ByteArrayInputStream(payload);
+            bufferInput.read(pieceIndex, 0, 4);
+
+            int in = ByteBuffer.wrap(pieceIndex).getInt();
+            allPeerMap.get(currentPeerID).bitfield.set(in);
+            allPeerMap.get(receivedMsg.PeerID).bitfield.set(in);
+
+            byte[] part = Arrays.copyOfRange(payload, 4, payload.length - 4);
+            FileOutputStream fileOutputStream;
+
+            try {
+                fileOutputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "peer_" + UtilityClass.currentPeerID + File.separator + in + ".splitPart");
+                fileOutputStream.write(part);
+                fileOutputStream.close();
+
+            } catch (FileNotFoundException e) {
+                logger.log(e.getMessage(), Level.SEVERE);
+            } catch (IOException e) {
+                logger.log(e.getMessage(), Level.SEVERE);
+            }
+
+            allPeerMap.keySet().forEach(peer -> {
+                BitSet peerBitfield = allPeerMap.get(peer).bitfield;
+                if (!peerBitfield.get(in)) {
+                    //Send Have message
+                    byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
+                    Message message = new Message(peer, HAVE);
+                    message.messagePayload = havePayload;
+                    try {
+                        socketChannel.write(UtilityClass.transformObject(message));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            });
+
+        }
+    }
+
+    private void writeToChannel() {
+        try {
+            socketChannel.write(buffer);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        buffer.clear();
+        buffer.flip();
+    }
 
 }
