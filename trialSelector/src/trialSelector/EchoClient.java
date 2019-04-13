@@ -15,7 +15,7 @@ public class EchoClient extends Thread{
 		try {
 			peerInfo = peerInfoObj;
 			client = SocketChannel.open(new InetSocketAddress(peerInfoObj.hostName, peerInfoObj.listeningPort));
-			peerInfoObj.peerSocketChannel = client;
+			//peerInfoObj.peerSocketChannel = client;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -34,9 +34,9 @@ public class EchoClient extends Thread{
 	public String sendMessage(HandshakeMessage msg) {
 		String response = null;
 		try {
+			buffer = UtilityClass.transformObject(msg);
+			client.write(buffer);
 			while (true) {
-				buffer = UtilityClass.transformObject(msg);
-				client.write(buffer);
 				buffer.clear();
 
 				byte[] bytes = null;
@@ -50,10 +50,10 @@ public class EchoClient extends Thread{
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		return response;
-
 	}
 }

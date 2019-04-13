@@ -1,9 +1,9 @@
 package trialSelector;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,8 +34,6 @@ public class MessageHandler extends Thread implements PeerConstants {
 				case BITFIELD:
 					System.out.println("Handle Bitfield Message");
 					handleBitfieldMessage(msg);
-					buffer.clear();
-					buffer.flip();
 					break;
 				case INTERESTED:
 					handleInterestedMessage(msg.PeerID);
@@ -51,8 +49,6 @@ public class MessageHandler extends Thread implements PeerConstants {
 					break;
 				case HAVE:
 					handleHaveMessage(msg);
-					buffer.clear();
-					buffer.flip();
 					break;
 				case REQUEST:
 					handleRequestMessage(msg);
@@ -91,6 +87,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 			System.out.println(currentPeerID + " is polling for handshake messages ");
 			System.out.println((message).getPeerID() + " is the peer ID I have to reply to");
 			if (!allPeerMap.get(message.getPeerID()).isHandshakeSent) {
+				allPeerMap.get(message.getPeerID()).peerSocketChannel = ch;
 				HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
 				buffer = transformObject(reply);
 				writeToChannel();
@@ -240,6 +237,55 @@ public class MessageHandler extends Thread implements PeerConstants {
 			}
 		}
 	}
+
+	private void handlePieceMessage(Message receivedMsg) {
+		//
+		if (receivedMsg.messagePayload != null) {
+			byte[] payload = receivedMsg.messagePayload;
+			byte[] pieceIndex = new byte[4];
+
+			ByteArrayInputStream bufferInput = new ByteArrayInputStream(payload);
+			bufferInput.read(pieceIndex,0,4);
+
+			int in = ByteBuffer.wrap(pieceIndex).getInt();
+			allPeerMap.get(currentPeerID).bitfield.set(in);
+			allPeerMap.get(receivedMsg.PeerID).bitfield.set(in);
+
+			byte[] part = Arrays.copyOfRange(payload, 4, payload.length - 4);
+			FileOutputStream fileOutputStream;
+
+			try {
+				fileOutputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "peer_" + UtilityClass.currentPeerID + File.separator + in + ".splitPart");
+				fileOutputStream.write(part);
+				fileOutputStream.close();
+
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			//TO-DO - logging, once the choking unchoking works
+			allPeerMap.keySet().forEach(peer-> {
+				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
+				if(!peerBitfield.get(in)){
+					//Send Have message
+					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
+					Message message = new Message(peer, HAVE);
+					message.messagePayload = havePayload;
+					try {
+						ch.write(UtilityClass.transformObject(message));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+				}
+			});
+
+		}
+	}
+
 	private void writeToChannel()
 	{
 		try {
@@ -251,8 +297,5 @@ public class MessageHandler extends Thread implements PeerConstants {
 		buffer.clear();
 		buffer.flip();
 	}
-	private void handlePieceMessage(Message recievedMsg) {
-		// TODO Auto-generated method stub
 
-	}
 }
