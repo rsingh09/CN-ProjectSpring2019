@@ -64,7 +64,8 @@ public class peerProcess {
 		createServer(UtilityClass.getCurrentPeerInfo());
 		for (int id : UtilityClass.allPeerMap.keySet()) {
 			if (id == UtilityClass.currentPeerID) {
-				break;
+//				break;
+				continue;
 			} else {
 				System.out.println("Multiple id : " + id);
 				createSocketChannels(UtilityClass.allPeerMap.get(id));
@@ -74,7 +75,7 @@ public class peerProcess {
 
         scheduler = Executors.newScheduledThreadPool(2);
         //StartShutdownProcess();
-        determineKPreferredNeighborsAndSendUnchoke(CommonProperties.getUnchokingInterval());
+//        determineKPreferredNeighborsAndSendUnchoke(CommonProperties.getUnchokingInterval());
         sendUnchokeMessageToOptimisticallyUnchokedPeer(CommonProperties.optimisticUnchokingInterval);
 	}
 
@@ -85,6 +86,7 @@ public class peerProcess {
 			server.start();
 			String msg = "Created Peer" + peerInfo.peerID;
 			String lvl = "Info";
+			bitTorrentLogger.log(msg, Level.INFO);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -127,13 +129,20 @@ public class peerProcess {
                 int k = CommonProperties.getNumberOfPreferredNeighbors();
 
                 ArrayList<PeerInfo> interestedPeers = new ArrayList<>();
+                bitTorrentLogger.log("Size of interestedPeers list inside sendUnchokeMessageToOptimisticallyUnchokedPeer method: "+ UtilityClass.intersetedPeers.size(), Level.WARNING);
                 for (int id : UtilityClass.intersetedPeers) {
                     System.out.println("The id is : " + id);
                     interestedPeers.add(UtilityClass.allPeerMap.get(id));
                 }
 
-                if (interestedPeers.size() > 0 && interestedPeers.size() > k) {
-                    int randomNum = ThreadLocalRandom.current().nextInt(k + 1, interestedPeers.size());
+//                if (interestedPeers.size() > 0 && interestedPeers.size() > k) { // commenting out for test purpose
+                if (true) {
+
+                    Random rand = new Random();
+
+                    // Generate random integers in range 0 to 999
+                    int randomNum = rand.nextInt(interestedPeers.size());
+//                    int randomNum = ThreadLocalRandom.current().nextInt(k + 1, interestedPeers.size());
                     System.out.println("Random num is " + randomNum);
                     PeerInfo peerPara = interestedPeers.get(randomNum);
 
