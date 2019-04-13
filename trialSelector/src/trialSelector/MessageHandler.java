@@ -1,17 +1,21 @@
 package trialSelector;
 
-import java.io.*;
+import javax.rmi.CORBA.Util;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 
 import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
 	SocketChannel ch;
 	ByteBuffer buffer;
+	private static BitTorrentLogger logger;
 
 	public MessageHandler(SocketChannel keyChannel,ByteBuffer buffer) {
 		ch = keyChannel;
@@ -72,6 +76,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 		// TODO Auto-generated method stub
 		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Unchoked list");
 		UtilityClass.unChokedPeers.add(remotePeerID);
+		logger.log("Size of interestedPeers list after handling unchoke msg: "+ UtilityClass.unChokedPeers.size(), Level.WARNING);
 
 	}
 
@@ -200,15 +205,15 @@ public class MessageHandler extends Thread implements PeerConstants {
 			if(UtilityClass.getCurrentPeerInfo().bitfield.get(index) == true)
 			{
 				System.out.println(recievedMsg.PeerID + " has nothing I don't got");
-				sendNotInterested(recievedMsg.PeerID);	
+				sendNotInterested(recievedMsg.PeerID);
 			}
 			else
 			{
 				System.out.println(recievedMsg.PeerID + " has an interesting piece, yummm yummm");
-				sendInterested(recievedMsg.PeerID);			
+				sendInterested(recievedMsg.PeerID);
 			}
 		}
-		else 
+		else
 		{
 			try {
 				throw new BitTorrentExceptions("Something wrong in have message, payload is missing");
@@ -227,7 +232,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(payload);
 			inputStream.read(payload,0,4);
 		}
-		else 
+		else
 		{
 			try {
 				throw new BitTorrentExceptions("Something wrong in request message, payload is missing");
