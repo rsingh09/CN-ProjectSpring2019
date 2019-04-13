@@ -3,17 +3,24 @@ package trialSelector;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
- class BitTorrentLogger {
-    boolean append = true;
+
+ public class BitTorrentLogger {
+    private boolean append;
+
+     public BitTorrentLogger(){
+          append = true;
+     }
+
 	/*
-	Function name : WriteToLog
+	Function name : log
 	Parameters passed: Peer ID , Msg (message to be printed), level of the message Info/Warning/Severe
 	Return: Void
 	Writes into the log file based on based on the peer id
 	*/
-    public void WriteToLog(String msg, String level) {
+    public void log(String msg, Level level) {
         Logger logger = Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
         FileHandler handler = null;
         String fileName = "log_peer_" + UtilityClass.currentPeerID + ".log";
@@ -34,25 +41,27 @@ import java.util.logging.SimpleFormatter;
             e.printStackTrace();
         }
         logger.addHandler(handler);
-        switch (level) {
-            case "Info":
-                logger.info(msg);
-                break;
-            case "Error":
-                logger.severe(msg);
-                break;
-            case "Warning":
-                logger.warning(msg);
-                break;
-        }
+
+        logger.log(level, msg);
+//        switch (level) {
+//            case Level.INFO:
+//                logger.info(msg);
+//                break;
+//            case "Error":
+//                logger.severe(msg);
+//                break;
+//            case "Warning":
+//                logger.warning(msg);
+//                break;
+
     }
 	/*
-	Function name : WriteToLog
+	Function name : log
 	Parameters passed: Msg (message to be printed), level of the message Info/Warning/Severe
 	Return: Void
 	Writes into the common log file 
 	*/
-//    public void WriteToLog(String msg, String level) {
+//    public void log(String msg, String level) {
 //        Logger logger = Logger.getLogger("MyLog");
 //        FileHandler handler = null;
 //        String fileName = "general.log";

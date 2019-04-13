@@ -1,18 +1,20 @@
 package trialSelector;
 
-import jdk.jshell.execution.Util;
-import java.io.ByteArrayOutputStream;
+//import jdk.jshell.execution.Util;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.BitSet;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.concurrent.*;
+import java.util.logging.Level;
 
 public class peerProcess {
 	private static EchoServer server;
-	//static BitTorrentLogger log = new BitTorrentLogger();
+    private static ScheduledExecutorService scheduler;
+    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
@@ -69,6 +71,11 @@ public class peerProcess {
 				System.out.println("id : " + id);
 			}
 		}
+
+        scheduler = Executors.newScheduledThreadPool(2);
+        //StartShutdownProcess();
+        determineKPreferredNeighborsAndSendUnchoke(CommonProperties.getUnchokingInterval());
+        sendUnchokeMessageToOptimisticallyUnchokedPeer(CommonProperties.optimisticUnchokingInterval);
 	}
 
 
@@ -82,21 +89,21 @@ public class peerProcess {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void determineKPreferredNeighbour()
 	{
-		
+
 	}
-	
+
 	private static void determineOptimisticallyUnchoke()
 	{
-		
+
 	}
 
 	private static void createSocketChannels(PeerInfo peerInfo) {
 		EchoClient client = new EchoClient(peerInfo);
 		client.start();
-		
+
 		//client.sendMessage(handshakeMsg);
 
 	}
@@ -111,4 +118,131 @@ public class peerProcess {
 		}
 		throw new IOException("Failed to create directory '" + dir.getAbsolutePath() + "' for an unknown reason.");
 	}*/
+
+    private static void sendUnchokeMessageToOptimisticallyUnchokedPeer(int optimisticUnchokingInterval) {
+        final Runnable DetermineOptimisticallyUnchokedPeer = new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("I will optimistically unchoke now");
+                int k = CommonProperties.getNumberOfPreferredNeighbors();
+
+                ArrayList<PeerInfo> interestedPeers = new ArrayList<>();
+                for (int id : UtilityClass.intersetedPeers) {
+                    System.out.println("The id is : " + id);
+                    interestedPeers.add(UtilityClass.allPeerMap.get(id));
+                }
+
+                if (interestedPeers.size() > 0 && interestedPeers.size() > k) {
+                    int randomNum = ThreadLocalRandom.current().nextInt(k + 1, interestedPeers.size());
+                    System.out.println("Random num is " + randomNum);
+                    PeerInfo peerPara = interestedPeers.get(randomNum);
+
+                    if (peerPara.peerState != PeerState.UNCHOKED) {
+                        Message sendMessage = new Message(UtilityClass.currentPeerID, PeerConstants.PEER_UNCHOKED);
+                        bitTorrentLogger.log("Peer " + UtilityClass.currentPeerID +
+                                "has the optimistically unchoked neighbor" + peerPara.peerID, Level.INFO);
+                        try {
+//							peerPara.peerHandler.peerObjectOutStream.writeObject(sendMessage);
+                            peerPara.peerSocketChannel.write(UtilityClass.transformObject(sendMessage));
+
+                        } catch (IOException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        };
+        scheduler.scheduleAtFixedRate(DetermineOptimisticallyUnchokedPeer, optimisticUnchokingInterval,
+                optimisticUnchokingInterval, TimeUnit.SECONDS);
+    }
+
+    private static void determineKPreferredNeighborsAndSendUnchoke(int unchokingInterval) {
+        final Runnable kPreferredNeighbors = new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("I will determine k preferred neighbors now");
+
+                int kPreferredNeighbors = CommonProperties.getNumberOfPreferredNeighbors();
+                int count = 0;
+                Random rand = new Random();
+
+
+                ArrayList<PeerInfo> interestedPeers = new ArrayList<>();
+                String preferredNeighbors = "";
+
+                for (int id : UtilityClass.intersetedPeers) {
+                    System.out.println("The id is : " + id);
+                    preferredNeighbors = preferredNeighbors + id + ", ";
+                    interestedPeers.add(UtilityClass.allPeerMap.get(id));
+                }
+
+                bitTorrentLogger.log("Peer " + UtilityClass.currentPeerID + " chooses the following as the preferred neighbors " + preferredNeighbors, Level.INFO);
+
+                Iterator<PeerInfo> it = interestedPeers.iterator();
+                if (interestedPeers.size() > 0) {
+                    System.out.println("Calculating the k preferred neighbors");
+
+                    if (UtilityClass.allPeerMap.get(UtilityClass.currentPeerID).hasFile == 1)//check for complete file
+                    {
+                        int rnd = rand.nextInt(kPreferredNeighbors);
+                        System.out.println("Random number : " + rnd);
+                        UtilityClass.kNeighbours.add(interestedPeers.get(rnd).peerID);
+
+                        PeerInfo sendPeer = interestedPeers.get(rnd);
+                        Message sendMessage = new Message(UtilityClass.currentPeerID, PeerConstants.PEER_UNCHOKED);
+
+                        if (sendPeer.peerState != PeerState.UNCHOKED) {
+                            try {
+                                System.out.println(sendPeer.peerID + "is getting unchoke now");
+                                sendPeer.peerSocketChannel.write(UtilityClass.transformObject(sendMessage));
+//								sendPeer.peerHandler.peerObjectOutStream.writeObject(sendMessage);
+//								sendPeer.peerHandler.peerObjectOutStream.flush();
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+                        interestedPeers.sort(new Comparator<PeerInfo>() {
+                            @Override
+                            public int compare(PeerInfo o1, PeerInfo o2) {
+                                if (o1.downloadRate == o2.downloadRate) {
+                                    return rand.nextInt(2);
+                                }
+                                return (o1.downloadRate - o2.downloadRate);    //sort in decreasing order
+                            }
+                        });
+
+                        while (interestedPeers.size() > kPreferredNeighbors && count < kPreferredNeighbors) {
+                            UtilityClass.kNeighbours.clear();       //check
+                            PeerInfo peerSelected = it.next();
+                            UtilityClass.kNeighbours.add(peerSelected.peerID);
+                            count++;
+                            if (peerSelected.peerState == PeerState.CHOKED) {
+                                Message sendMessage = new Message(UtilityClass.currentPeerID, PeerConstants.UNCHOKE);
+
+                                try {
+                                    peerSelected.peerSocketChannel.write(UtilityClass.transformObject(sendMessage));
+                                } catch (IOException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        try {
+            final ScheduledFuture<?> kNeighborDeterminerHandle =
+                    scheduler.scheduleAtFixedRate(kPreferredNeighbors, 5, 5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+    }
+
 }

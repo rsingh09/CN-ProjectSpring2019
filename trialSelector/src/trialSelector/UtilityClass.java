@@ -18,6 +18,7 @@ public class UtilityClass
 	//public static ConcurrentHashMap<Integer, PeerInfo> intersetedPeers = new ConcurrentHashMap<Integer,PeerInfo>();
 	public static CopyOnWriteArrayList<Integer> intersetedPeers = new CopyOnWriteArrayList<Integer>();
 	public static CopyOnWriteArrayList<Integer> unChokedPeers = new CopyOnWriteArrayList<Integer>();
+	public static CopyOnWriteArrayList<Integer> kNeighbours = new CopyOnWriteArrayList<Integer>();
 	public static Selector selectorP2P;
 	public static int currentPeerID;
 	public static int totalSplitParts;

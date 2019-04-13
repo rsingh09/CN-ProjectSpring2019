@@ -15,6 +15,7 @@ public class EchoClient extends Thread{
 		try {
 			peerInfo = peerInfoObj;
 			client = SocketChannel.open(new InetSocketAddress(peerInfoObj.hostName, peerInfoObj.listeningPort));
+			peerInfoObj.peerSocketChannel = client;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

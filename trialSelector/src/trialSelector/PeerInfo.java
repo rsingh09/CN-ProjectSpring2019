@@ -8,6 +8,14 @@ import java.util.BitSet;
  * @author kaush
  * TO-DO populate all the attributes of Remote Peer Info
  */
+enum PeerState{
+    HAVE,
+    UNCHOKED,
+    CHOKED,
+    INTERESTED,
+    BITFIELD
+}
+
 public class PeerInfo {
     int peerID;
     String hostName;
@@ -15,10 +23,14 @@ public class PeerInfo {
     int fileInfo;
     int hasFile;
     int peerIndex;
-    int peerState;
+//    int peerState;
+    PeerState peerState;
     Boolean isHandshakeSent;
     int downloadRate = 0;
     public BitSet bitfield;
+    public SocketChannel peerSocketChannel;
+
+
 
 
     /*
