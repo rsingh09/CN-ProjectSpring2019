@@ -5,8 +5,8 @@ package trialSelector;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
+//import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.*;
 import java.util.logging.Level;
@@ -64,8 +64,8 @@ public class peerProcess {
 		createServer(UtilityClass.getCurrentPeerInfo());
 		for (int id : UtilityClass.allPeerMap.keySet()) {
 			if (id == UtilityClass.currentPeerID) {
-//				break;
-				continue;
+				break;
+				//continue;
 			} else {
 				System.out.println("Multiple id : " + id);
 				createSocketChannels(UtilityClass.allPeerMap.get(id));
