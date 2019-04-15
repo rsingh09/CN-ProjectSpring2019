@@ -27,7 +27,7 @@ public class UtilityClass
 	{
 		return allPeerMap.get(currentPeerID);
 	}
-	public static Object ReadFromBuffer (byte[] buffer) throws ClassNotFoundException, IOException
+	synchronized public static Object ReadFromBuffer (byte[] buffer) throws ClassNotFoundException, IOException
 	{
 		//byte[] arr = new byte[buffer.remaining()];
 		ByteArrayInputStream in = new ByteArrayInputStream(buffer);
