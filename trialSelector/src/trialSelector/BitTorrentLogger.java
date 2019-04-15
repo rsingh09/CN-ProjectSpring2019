@@ -10,8 +10,21 @@ import java.util.logging.SimpleFormatter;
  public class BitTorrentLogger {
     private boolean append;
 
-     public BitTorrentLogger(){
+    private static BitTorrentLogger loggerInstance = null;
+
+     protected BitTorrentLogger(){
           append = true;
+     }
+
+     public static BitTorrentLogger getInstance(){
+         if (null == loggerInstance){
+             synchronized (BitTorrentLogger.class){
+                 if(null == loggerInstance)
+                     loggerInstance = new BitTorrentLogger();
+             }
+         }
+
+         return loggerInstance;
      }
 
 	/*

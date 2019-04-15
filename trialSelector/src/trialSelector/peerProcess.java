@@ -14,7 +14,7 @@ import java.util.logging.Level;
 public class peerProcess {
 	private static EchoServer server;
     private static ScheduledExecutorService scheduler;
-    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
+    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
@@ -92,15 +92,6 @@ public class peerProcess {
 		}
 	}
 
-	private static void determineKPreferredNeighbour()
-	{
-
-	}
-
-	private static void determineOptimisticallyUnchoke()
-	{
-
-	}
 
 	private static void createSocketChannels(PeerInfo peerInfo) {
 		EchoClient client = new EchoClient(peerInfo);
