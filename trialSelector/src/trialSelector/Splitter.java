@@ -9,14 +9,14 @@ import java.util.*;
 
 public class Splitter {
     private static String dir = System.getProperty("user.dir");
-    private static final String suffix = ".splitPart";
+    private static final String suffix = ".dat";
 
     public static List<Path> splitFileToPieces(String fileName, int mBperSplit, int PeerID) throws IOException {
-        dir = dir + File.separator + "peer_" + PeerID;
-        //System.out.println("Directory of the split file for a peer "+dir);
+        dir = dir + File.separator + "peer_" + PeerID + "\\";
+        System.out.println("Directory of the split file for a peer "+dir);
         if (mBperSplit <= 0) {
             //System.out.println("Of course Eden has more bytes ");
-            throw new IllegalArgumentException("mBperSplit must be more than zero");
+            throw new IllegalArgumentException("MB per split must be more than zero");
         }
 
         List partFiles = new ArrayList();

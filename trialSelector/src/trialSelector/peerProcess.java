@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.*;
 //import java.util.Iterator;
-import java.util.Random;
+//import java.util.Random;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
@@ -23,7 +23,6 @@ public class peerProcess {
 		// iterate to send connect requests to the servers.
 		// Once accepting the connection, assign the socket channel to the selector
 
-
 		ReadConfigurations.readPeerInfo();
 		ReadConfigurations.readCommonConfig();
 
@@ -38,7 +37,7 @@ public class peerProcess {
         if(UtilityClass.allPeerMap.get(currentPeerID).hasFile == 1){
         	System.out.println("Peer " + currentPeerID + " has the complete file ");
 			try{
-				Splitter.splitFileToPieces(CommonProperties.fileName, CommonProperties.fileSize, currentPeerID);
+				Splitter.splitFileToPieces(CommonProperties.fileName, CommonProperties.pieceSize, currentPeerID);
 			} catch(Exception e){
 				e.printStackTrace();
 			}

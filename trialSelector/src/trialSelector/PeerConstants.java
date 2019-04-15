@@ -16,5 +16,7 @@ public interface PeerConstants {
 	public static final int PEER_INTERESTED = 2;
 	public static final int PEER_NOT_INTERESTED =3;
 	public static final int PEER_HAVE = 4;
+	//other constants
+	public static final String FILE_SUFFIX = ".dat";
 
 }
