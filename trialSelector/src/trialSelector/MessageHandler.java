@@ -142,7 +142,8 @@ public class MessageHandler extends Thread implements PeerConstants {
 				HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
 				buffer = transformObject(reply);
 				//buffer.wrap(b);
-				writeToChannel();
+				socketChannel.write(buffer);
+				//writeToChannel();
 				allPeerMap.get(message.getPeerID()).isHandshakeSent = true;
 				// Send Bitfield messsage only if my Bitset is not empty
 				if (!allPeerMap.get(currentPeerID).bitfield.isEmpty()) {

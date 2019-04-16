@@ -71,12 +71,11 @@ public class EchoServer extends Thread
 		// client.
 		client.read(buffer);
 		byte[] b = buffer.array();
+		System.out.println("Byte Length: "+ b.length);
 		try {
 			Object obj = UtilityClass.ReadFromBuffer(b);
 			if (obj instanceof HandshakeMessage)
 			{
-				buffer.flip();
-				buffer.clear();
 				HandshakeMessage hm=(HandshakeMessage)obj;
 				int peerid=hm.getPeerID();
 				if(!UtilityClass.channelMessageHandlerMap.contains(peerid)) {
@@ -90,8 +89,11 @@ public class EchoServer extends Thread
 			}
 			else if (obj instanceof Message)
 			{
+				buffer.flip();
+				buffer.clear();
 				Message hm=(Message)obj;
 				int peerid=hm.PeerID;
+				System.out.println(hm.PeerID + ": Message Type: " + hm.getMessageType());
 				UtilityClass.channelMessageHandlerMap.get(peerid).messagesQueue.add(obj);
 			}
 //			if (UtilityClass.channelMessageHandlerMap.contains(key)) {

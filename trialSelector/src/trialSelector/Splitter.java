@@ -12,7 +12,7 @@ public class Splitter {
     private static final String suffix = ".dat";
 
     public static List<Path> splitFileToPieces(String fileName, int mBperSplit, int PeerID) throws IOException {
-        dir = dir + File.separator + "peer_" + PeerID + "\\";
+        dir = dir + File.separator + "peer_" + PeerID + File.separator;
         System.out.println("Directory of the split file for a peer "+dir);
         if (mBperSplit <= 0) {
             //System.out.println("Of course Eden has more bytes ");
