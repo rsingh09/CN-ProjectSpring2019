@@ -14,7 +14,8 @@ import java.util.logging.Level;
 public class peerProcess {
 	private static EchoServer server;
     private static ScheduledExecutorService scheduler;
-    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
+//    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
+    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
@@ -121,40 +122,54 @@ public class peerProcess {
         final Runnable DetermineOptimisticallyUnchokedPeer = new Runnable() {
             @Override
             public void run() {
-                System.out.println("I will optimistically unchoke now");
-                int k = CommonProperties.getNumberOfPreferredNeighbors();
+                try {
+                    System.out.println("I will optimistically unchoke now");
+                    int k = CommonProperties.getNumberOfPreferredNeighbors();
 
-                ArrayList<PeerInfo> interestedPeers = new ArrayList<>();
-                bitTorrentLogger.log("Size of interestedPeers list inside sendUnchokeMessageToOptimisticallyUnchokedPeer method: "+ UtilityClass.intersetedPeers.size(), Level.WARNING);
-                for (int id : UtilityClass.intersetedPeers) {
-                    System.out.println("The id is : " + id);
-                    interestedPeers.add(UtilityClass.allPeerMap.get(id));
-                }
+                    ArrayList<PeerInfo> interestedPeers = new ArrayList<>();
+                    bitTorrentLogger.log("Size of interestedPeers list inside sendUnchokeMessageToOptimisticallyUnchokedPeer method: " + UtilityClass.intersetedPeers.size(), Level.WARNING);
+                    for (int id : UtilityClass.intersetedPeers) {
+                        System.out.println("The id is : " + id);
+                        interestedPeers.add(UtilityClass.allPeerMap.get(id));
+                    }
 
-//                if (interestedPeers.size() > 0 && interestedPeers.size() > k) { // commenting out for test purpose
-                if (true) {
+                if (interestedPeers.size() > 0 && interestedPeers.size() > k) { // commenting out for test purpose
+//                    if (true) {
 
-                    Random rand = new Random();
+//                        Random rand = new Random();
 
-                    // Generate random integers in range 0 to 999
-                    int randomNum = rand.nextInt(interestedPeers.size());
+                        // Generate random integers in range 0 to 999
+//                        int randomNum = rand.nextInt(interestedPeers.size());
+                        int randomNum;
+                        if (interestedPeers.size() > k + 1) {
+                            randomNum = ThreadLocalRandom.current().nextInt(k + 1, interestedPeers.size());
+                        } else {
+                            randomNum = ThreadLocalRandom.current().nextInt(interestedPeers.size(), k + 1);
+                            return;
+                        }
 //                    int randomNum = ThreadLocalRandom.current().nextInt(k + 1, interestedPeers.size());
-                    System.out.println("Random num is " + randomNum);
-                    PeerInfo peerPara = interestedPeers.get(randomNum);
+                        System.out.println("Random num is " + randomNum);
+                        if (randomNum < interestedPeers.size()) {
+                            PeerInfo peerPara = interestedPeers.get(randomNum);
 
-                    if (peerPara.peerState != PeerState.UNCHOKED) {
-                        Message sendMessage = new Message(UtilityClass.currentPeerID, PeerConstants.PEER_UNCHOKED);
-                        bitTorrentLogger.log("Peer " + UtilityClass.currentPeerID +
-                                "has the optimistically unchoked neighbor" + peerPara.peerID, Level.INFO);
-                        try {
+                            if (peerPara.peerState != PeerState.UNCHOKED) {
+                                Message sendMessage = new Message(UtilityClass.currentPeerID, PeerConstants.PEER_UNCHOKED);
+                                bitTorrentLogger.log("Peer " + UtilityClass.currentPeerID +
+                                        "has the optimistically unchoked neighbor" + peerPara.peerID, Level.INFO);
+                                try {
 //							peerPara.peerHandler.peerObjectOutStream.writeObject(sendMessage);
-                            peerPara.peerSocketChannel.write(UtilityClass.transformObject(sendMessage));
+                                    peerPara.peerSocketChannel.write(UtilityClass.transformObject(sendMessage));
 
-                        } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                                } catch (IOException e) {
+                                    // TODO Auto-generated catch block
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     }
+                }catch (Exception e){
+                    e.printStackTrace();
+//                    bitTorrentLogger.log(e.getMessage(), Level.SEVERE);
                 }
             }
         };

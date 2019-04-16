@@ -12,7 +12,8 @@ import java.util.logging.Level;
 import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
-	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+//	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+	private static BitTorrentLogger logger = new BitTorrentLogger();
 	private SocketChannel socketChannel;
 	private ByteBuffer buffer;
 	ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();

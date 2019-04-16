@@ -10,7 +10,11 @@ import java.util.logging.SimpleFormatter;
  public class BitTorrentLogger {
     private boolean append;
 
-    private static BitTorrentLogger loggerInstance = null;
+     public BitTorrentLogger(){
+         append = true;
+     }
+
+  /*  private static BitTorrentLogger loggerInstance = null;
 
      protected BitTorrentLogger(){
           append = true;
@@ -25,7 +29,7 @@ import java.util.logging.SimpleFormatter;
          }
 
          return loggerInstance;
-     }
+     } */
 
 	/*
 	Function name : log
