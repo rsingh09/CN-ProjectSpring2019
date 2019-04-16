@@ -10,6 +10,7 @@ public interface PeerConstants {
 	public static final int BITFIELD = 5;
 	public static final int REQUEST = 6;
 	public static final int PIECE = 7;
+	public static final int SENDHAVE = 8;
 	//Peer states
 	public static final int PEER_CHOKED = 0;
 	public static final int PEER_UNCHOKED = 1;

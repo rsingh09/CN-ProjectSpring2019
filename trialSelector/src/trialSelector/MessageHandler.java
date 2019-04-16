@@ -12,8 +12,8 @@ import java.util.logging.Level;
 import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
-//	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
 	private static BitTorrentLogger logger = new BitTorrentLogger();
+	//private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
 	private SocketChannel socketChannel;
 	private ByteBuffer buffer;
 	ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();
@@ -57,6 +57,9 @@ public class MessageHandler extends Thread implements PeerConstants {
 						break;
 					case PIECE:
 						handlePieceMessage(msg);
+						break;
+					case SENDHAVE:
+						sendHaveMessage(msg);
 						break;
 					default:
 						try {
@@ -139,19 +142,19 @@ public class MessageHandler extends Thread implements PeerConstants {
 			System.out.println(currentPeerID + " sending handshake to:  " + (message).getPeerID());
 //            System.out.println((message).getPeerID() + " is the peer ID I have to reply to");
 			if (!allPeerMap.get(message.getPeerID()).isHandshakeSent) {
-				//allPeerMap.get(message.getPeerID()).peerSocketChannel = socketChannel;
+				// allPeerMap.get(message.getPeerID()).peerSocketChannel = socketChannel;
 				HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
 				buffer = transformObject(reply);
-				//buffer.wrap(b);
+				// buffer.wrap(b);
 				socketChannel.write(buffer);
-				//writeToChannel();
+				// writeToChannel();
 				allPeerMap.get(message.getPeerID()).isHandshakeSent = true;
 				// Send Bitfield messsage only if my Bitset is not empty
 				if (!allPeerMap.get(currentPeerID).bitfield.isEmpty()) {
 					System.out.println(currentPeerID + " sending bitfield to:  " + (message).getPeerID());
 					sendBitfieldMessage((message).getPeerID());
-				} //else
-					//buffer.flip();
+				} // else
+					// buffer.flip();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -336,39 +339,55 @@ public class MessageHandler extends Thread implements PeerConstants {
 			} catch (IOException e) {
 				logger.log(e.getMessage(), Level.SEVERE);
 			}
-
-			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
-				// allPeerMap.keySet().forEach(peer -> {
-				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
-				if (!peerBitfield.get(in) && allPeerMap.get(peer).isHandshakeSent) {
-					// Send Have message
+			for (Integer peer : UtilityClass.channelMessageHandlerMap.keySet()) {
+				try {
+					
 					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
-					Message message = new Message(peer, HAVE);
+					Message message = new Message(peer, SENDHAVE);
+					message.PeerID = currentPeerID;
 					message.messagePayload = havePayload;
-
-					try {
-						buffer = UtilityClass.transformObject(message);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					writeToChannel();
-
+					buffer = UtilityClass.transformObject(message);
+					UtilityClass.channelMessageHandlerMap.get(peer).messagesQueue.add(message);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
+//			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
+//				// allPeerMap.keySet().forEach(peer -> {
+//				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
+//				if (!peerBitfield.get(in) && allPeerMap.get(peer).isHandshakeSent) {
+//					// Send Have message
+//					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
+//					Message message = new Message(peer, HAVE);
+//					message.messagePayload = havePayload;
+//
+//					try {
+//						buffer = UtilityClass.transformObject(message);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					writeToChannel();
+//
+//				}
+//			}
 
-			System.out.println("Number of Pieces "+allPeerMap.get(currentPeerID).numberOfPieces);
-			System.out.println("Total Split parts "+totalSplitParts);
+			System.out.println("Number of Pieces " + allPeerMap.get(currentPeerID).numberOfPieces);
+			System.out.println("Total Split parts " + totalSplitParts);
 
-
-			if((allPeerMap.get(currentPeerID).hasFile != 1) && (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts))
-			{
+			if ((allPeerMap.get(currentPeerID).hasFile != 1)
+					&& (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts)) {
 				UtilityClass.mergeSplitFiles();
 			}
 			System.out.println("Total number of pieces received" + allPeerMap.get(currentPeerID).numberOfPieces);
 		}
 	}
-
+	private void sendHaveMessage(Message msg)
+	{
+		msg.msgType = HAVE;
+		writeToChannel();
+	}
 	private void sendPieceMessage(int pieceIndex, int remotePeerID) {
 		System.out.println(currentPeerID + " Sending piece to :" + remotePeerID);
 		String directoryPath = System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID
@@ -395,7 +414,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 //			buffer.clear();
 //			socketChannel.write(buffer);
 			writeToChannel();
-			//buffer.flip();
+			// buffer.flip();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

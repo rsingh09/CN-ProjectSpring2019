@@ -79,8 +79,8 @@ public class UtilityClass {
 		UtilityClass.channelMessageHandlerMap.put(peer.peerID, messageHandler);
 		// buffer.wrap(b, 0, b.length);
 		client.write(buffer);
-		buffer.flip();
-		buffer.clear();
+		//buffer.flip();
+		//buffer.clear();
 
 	}
 
@@ -119,9 +119,7 @@ public class UtilityClass {
 				inputStream.read(bytes);
 				list.add(i, bytes);
 				inputStream.close();
-
 				i++;
-
 			}
 			OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID + File.separator + "Eden.jpg");
 			System.out.println("Correct directory for the file being split" + currentPeerID);
