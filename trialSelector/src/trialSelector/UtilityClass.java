@@ -124,9 +124,9 @@ public class UtilityClass {
 
 			}
 			OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID + File.separator + "Eden.jpg");
-			System.out.println("Correct directory for the file being split  " + + );
+			System.out.println("Correct directory for the file being split" + currentPeerID);
 			int j = 0;
-			while(j < 9)
+			while(j < 8)
 			{
 				outputStream.write(list.get(j));
 				j++;

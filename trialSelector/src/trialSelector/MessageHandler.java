@@ -354,7 +354,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 				}
 			}
 
-			if((allPeerMap.get(receivedMsg.PeerID).hasFile != 1) && (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts - 1))
+			if((allPeerMap.get(currentPeerID).hasFile != 1) && (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts - 1))
 			{
 				UtilityClass.mergeSplitFiles();
 			}
