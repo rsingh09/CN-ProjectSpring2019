@@ -149,8 +149,8 @@ public class MessageHandler extends Thread implements PeerConstants {
 				if (!allPeerMap.get(currentPeerID).bitfield.isEmpty()) {
 					System.out.println(currentPeerID + " sending bitfield to:  " + (message).getPeerID());
 					sendBitfieldMessage((message).getPeerID());
-				} else
-					buffer.flip();
+				} //else
+					//buffer.flip();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -376,7 +376,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 		byte[] bytes1 = ByteBuffer.allocate(4).putInt(pieceIndex).array();
 		File file = new File(directoryPath);
 		// byte[] bytes2 = new byte[(int) file.length() + 4];
-		byte[] bytes2 = new byte[CommonProperties.pieceSize + 4];
+		byte[] bytes2 = new byte[CommonProperties.pieceSize];
 
 		FileInputStream fis;
 		try {

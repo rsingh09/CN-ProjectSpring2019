@@ -67,7 +67,7 @@ public class EchoServer extends Thread
 
 	private static void answerWithEcho(SelectionKey key) throws IOException {
 		SocketChannel client = (SocketChannel) key.channel();
-		ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
+		ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 1000);
 		// client.
 		client.read(buffer);
 		byte[] b = buffer.array();
@@ -76,6 +76,7 @@ public class EchoServer extends Thread
 			Object obj = UtilityClass.ReadFromBuffer(b);
 			if (obj instanceof HandshakeMessage)
 			{
+				//buffer.clear();
 				HandshakeMessage hm=(HandshakeMessage)obj;
 				int peerid=hm.getPeerID();
 				if(!UtilityClass.channelMessageHandlerMap.contains(peerid)) {
