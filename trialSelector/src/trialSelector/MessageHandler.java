@@ -327,36 +327,35 @@ public class MessageHandler extends Thread implements PeerConstants {
 				allPeerMap.get(receivedMsg.PeerID).bitfield.set(in);
 				buffer.flip();
 				buffer.clear();
+				sendRequestMessage(receivedMsg.PeerID);
 			} catch (FileNotFoundException e) {
 				logger.log(e.getMessage(), Level.SEVERE);
 			} catch (IOException e) {
 				logger.log(e.getMessage(), Level.SEVERE);
 			}
-			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
-				// allPeerMap.keySet().forEach(peer -> {
-				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
-				if (!peerBitfield.get(in) && allPeerMap.get(peer).isHandshakeSent) {
-					// Send Have message
-					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
-					Message message = new Message(peer, HAVE);
-					message.messagePayload = havePayload;
-
-					try {
-						buffer = UtilityClass.transformObject(message);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					writeToChannel();
-//                    try {
-//                        socketChannel.write(UtilityClass.transformObject(message));
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-
-				}
-			} // );
+			for (Integer peer : UtilityClass.channelMessageHandlerMap.keySet())
+			{
+				channelMessageHandlerMap.get(peer).messagesQueue.add();	
+			}
+//			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
+//				// allPeerMap.keySet().forEach(peer -> {
+//				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
+//				if (!peerBitfield.get(in) && allPeerMap.get(peer).isHandshakeSent) {
+//					// Send Have message
+//					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
+//					Message message = new Message(peer, HAVE);
+//					message.messagePayload = havePayload;
+//
+//					try {
+//						buffer = UtilityClass.transformObject(message);
+//					} catch (IOException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					writeToChannel();
+//
+//				}
+//			} 
 		}
 	}
 
