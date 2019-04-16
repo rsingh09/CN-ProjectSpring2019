@@ -13,7 +13,7 @@ import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
 	private static BitTorrentLogger logger = new BitTorrentLogger();
-	//private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+	// private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
 	private SocketChannel socketChannel;
 	private ByteBuffer buffer;
 	ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();
@@ -76,8 +76,8 @@ public class MessageHandler extends Thread implements PeerConstants {
 	private void handleUnchokeMessage(int remotePeerID) {
 //		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Unchoked list");
 //		UtilityClass.unChokedPeers.add(remotePeerID);
-		logger.log("Size of interestedPeers list after handling unchoke msg: " + UtilityClass.unChokedPeers.size(),
-				Level.WARNING);
+		//logger.log("Size of interestedPeers list after handling unchoke msg: " + UtilityClass.unChokedPeers.size(),
+		//		Level.WARNING);
 		sendRequestMessage(remotePeerID);
 
 	}
@@ -89,18 +89,14 @@ public class MessageHandler extends Thread implements PeerConstants {
 		BitSet currentPeerBitset = new BitSet(noOfsplits);
 		currentPeerBitset = (BitSet) currentPeer.bitfield.clone();
 
-		logger.log("Current peer " + currentPeer.peerID + " bitset is " + currentPeerBitset, Level.INFO);
-
+		////logger.log("Current peer " + currentPeer.peerID + " bitset is " + currentPeerBitset, Level.INFO);
 		BitSet remotePeerBitset = new BitSet(noOfsplits);
 		remotePeerBitset = (BitSet) allPeerMap.get(remotePeerId).bitfield.clone();
-
 		currentPeerBitset.flip(0, noOfsplits);
-
 		currentPeerBitset.and(remotePeerBitset);
+		////logger.log("After flipping and AND is : " + currentPeerBitset, Level.INFO);
 
-		logger.log("After flipping and AND is : " + currentPeerBitset, Level.INFO);
-
-		logger.log(currentPeerID + " is sending the request message now", Level.INFO);
+		//logger.log(currentPeerID + " is sending the request message now", Level.INFO);
 
 		Random rand = new Random();
 
@@ -108,14 +104,13 @@ public class MessageHandler extends Thread implements PeerConstants {
 			while (true) {
 				int randIndex = rand.nextInt(noOfsplits);
 				if (currentPeerBitset.get(randIndex)) {
-					logger.log("The index of the piece I am requesting is " + randIndex, Level.INFO);
+					//logger.log("The index of the piece I am requesting is " + randIndex, Level.INFO);
 					requestedPieces.add(randIndex);
 					byte[] payload = ByteBuffer.allocate(4).putInt(randIndex).array();
 					System.out.println(ByteBuffer.wrap(payload).getInt());
 
 					Message msg = new Message(UtilityClass.currentPeerID, REQUEST);
 					msg.messagePayload = payload;
-
 					try {
 						buffer = transformObject(msg);
 						writeToChannel();
@@ -194,10 +189,10 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handleInterestedMessage(Integer remotePeerID) {
-		logger.log("Adding" + remotePeerID + " to " + currentPeerID + "Interested list", Level.INFO);
+		//logger.log("Adding" + remotePeerID + " to " + currentPeerID + "Interested list", Level.INFO);
 		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Interested list");
 		UtilityClass.intersetedPeers.add(remotePeerID);
-		logger.log("Sending unchoke msg to peer: " + remotePeerID, Level.INFO);
+		//logger.log("Sending unchoke msg to peer: " + remotePeerID, Level.INFO);
 		allPeerMap.get(remotePeerID).peerState = PeerState.UNCHOKED;
 		sendUnchokeMessage(remotePeerID);
 		unChokedPeers.add(remotePeerID);
@@ -205,14 +200,14 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handleNotInterestedMessage(Integer remotePeerID) {
-		logger.log("Removing " + remotePeerID + " from " + currentPeerID + "' s interested list", Level.INFO);
+		//logger.log("Removing " + remotePeerID + " from " + currentPeerID + "' s interested list", Level.INFO);
 		System.out.println("Removing " + remotePeerID + " from " + currentPeerID + "' s interested list");
 		UtilityClass.intersetedPeers.remove(remotePeerID);
 	}
 
 	private void sendBitfieldMessage(int remotePeerID) {
 		try {
-			logger.log("Sending bitfield message from " + currentPeerID + " to " + remotePeerID, Level.INFO);
+			//logger.log("Sending bitfield message from " + currentPeerID + " to " + remotePeerID, Level.INFO);
 			byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
 			Message message = new Message(currentPeerID, BITFIELD);
 			message.messagePayload = bitfieldByteArray;
@@ -331,7 +326,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 				fileOutputStream.close();
 				allPeerMap.get(currentPeerID).bitfield.set(in);
 				allPeerMap.get(receivedMsg.PeerID).bitfield.set(in);
-				buffer.flip();
+				//buffer.flip();
 				buffer.clear();
 				sendRequestMessage(receivedMsg.PeerID);
 			} catch (FileNotFoundException e) {
@@ -340,18 +335,12 @@ public class MessageHandler extends Thread implements PeerConstants {
 				logger.log(e.getMessage(), Level.SEVERE);
 			}
 			for (Integer peer : UtilityClass.channelMessageHandlerMap.keySet()) {
-				try {
-					
-					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
-					Message message = new Message(peer, SENDHAVE);
-					message.PeerID = currentPeerID;
-					message.messagePayload = havePayload;
-					buffer = UtilityClass.transformObject(message);
-					UtilityClass.channelMessageHandlerMap.get(peer).messagesQueue.add(message);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
+				Message message = new Message(peer, SENDHAVE);
+				message.PeerID = currentPeerID;
+				message.messagePayload = havePayload;
+				// buffer = UtilityClass.transformObject(message);
+				UtilityClass.channelMessageHandlerMap.get(peer).messagesQueue.add(message);
 			}
 //			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
 //				// allPeerMap.keySet().forEach(peer -> {
@@ -383,11 +372,19 @@ public class MessageHandler extends Thread implements PeerConstants {
 			System.out.println("Total number of pieces received" + allPeerMap.get(currentPeerID).numberOfPieces);
 		}
 	}
-	private void sendHaveMessage(Message msg)
-	{
+
+	private void sendHaveMessage(Message msg) {
 		msg.msgType = HAVE;
+		try {
+			buffer.clear();
+			buffer = UtilityClass.transformObject(msg);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		writeToChannel();
 	}
+
 	private void sendPieceMessage(int pieceIndex, int remotePeerID) {
 		System.out.println(currentPeerID + " Sending piece to :" + remotePeerID);
 		String directoryPath = System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID

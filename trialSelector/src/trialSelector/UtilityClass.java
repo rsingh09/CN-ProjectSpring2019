@@ -129,7 +129,6 @@ public class UtilityClass {
 				outputStream.write(list.get(j));
 				j++;
 			}
-
 			outputStream.close();
 		} catch(FileNotFoundException ex){
 			ex.printStackTrace();
@@ -137,5 +136,4 @@ public class UtilityClass {
 			ex.printStackTrace();
 		}
 	}
-
 }
