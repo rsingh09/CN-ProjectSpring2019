@@ -30,6 +30,7 @@ public class PeerInfo {
     public BitSet bitfield;
     public SocketChannel peerSocketChannel;
     public static MessageHandler messageHandler;
+    int numberOfPieces;
 
 
 

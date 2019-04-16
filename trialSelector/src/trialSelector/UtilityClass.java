@@ -1,15 +1,12 @@
 package trialSelector;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -105,6 +102,42 @@ public class UtilityClass {
 		byte[] data = bos.toByteArray();
 		ByteBuffer buf = ByteBuffer.wrap(data);
 		return buf;
+	}
+
+	public static void mergeSplitFiles(){
+		try {
+			ArrayList<byte[]> list = new ArrayList<byte[]>();
+			int i = 0;
+
+			while (i < totalSplitParts) {
+				String peerDirectory = System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID + File.separator + i + ".dat";
+				File f = new File(peerDirectory);
+				FileInputStream inputStream;
+				byte[] bytes = new byte[(int) f.length()];
+
+				inputStream = new FileInputStream(f);
+				inputStream.read(bytes);
+				list.add(i, bytes);
+				inputStream.close();
+
+				i++;
+
+			}
+			OutputStream outputStream = new FileOutputStream(System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID + File.separator + "Eden.jpg");
+			System.out.println("Correct directory for the file being split  " + + );
+			int j = 0;
+			while(j < 9)
+			{
+				outputStream.write(list.get(j));
+				j++;
+			}
+
+			outputStream.close();
+		} catch(FileNotFoundException ex){
+			ex.printStackTrace();
+		} catch(IOException ex){
+			ex.printStackTrace();
+		}
 	}
 
 }

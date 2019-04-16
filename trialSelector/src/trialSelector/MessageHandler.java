@@ -304,8 +304,8 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handlePieceMessage(Message receivedMsg) {
-
 		if (receivedMsg.messagePayload != null) {
+			allPeerMap.get(currentPeerID).numberOfPieces += 1;
 			System.out.println(currentPeerID + " is handling piece message from " + receivedMsg.PeerID);
 			byte[] payload = receivedMsg.messagePayload;
 			byte[] pieceIndex = new byte[4];
@@ -333,29 +333,32 @@ public class MessageHandler extends Thread implements PeerConstants {
 			} catch (IOException e) {
 				logger.log(e.getMessage(), Level.SEVERE);
 			}
-			for (Integer peer : UtilityClass.channelMessageHandlerMap.keySet())
-			{
-				channelMessageHandlerMap.get(peer).messagesQueue.add();	
+
+			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
+				// allPeerMap.keySet().forEach(peer -> {
+				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
+				if (!peerBitfield.get(in) && allPeerMap.get(peer).isHandshakeSent) {
+					// Send Have message
+					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
+					Message message = new Message(peer, HAVE);
+					message.messagePayload = havePayload;
+
+					try {
+						buffer = UtilityClass.transformObject(message);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					writeToChannel();
+
+				}
 			}
-//			for (Integer peer : UtilityClass.allPeerMap.keySet()) {
-//				// allPeerMap.keySet().forEach(peer -> {
-//				BitSet peerBitfield = allPeerMap.get(peer).bitfield;
-//				if (!peerBitfield.get(in) && allPeerMap.get(peer).isHandshakeSent) {
-//					// Send Have message
-//					byte[] havePayload = ByteBuffer.allocate(4).putInt(in).array();
-//					Message message = new Message(peer, HAVE);
-//					message.messagePayload = havePayload;
-//
-//					try {
-//						buffer = UtilityClass.transformObject(message);
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					writeToChannel();
-//
-//				}
-//			} 
+
+			if((allPeerMap.get(receivedMsg.PeerID).hasFile != 1) && (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts - 1))
+			{
+				UtilityClass.mergeSplitFiles();
+			}
+			System.out.println("Total number of pieces received" + allPeerMap.get(currentPeerID).numberOfPieces);
 		}
 	}
 
