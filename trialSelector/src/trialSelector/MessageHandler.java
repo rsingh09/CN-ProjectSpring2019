@@ -305,6 +305,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handlePieceMessage(Message receivedMsg) {
+
 		if (receivedMsg.messagePayload != null) {
 			allPeerMap.get(currentPeerID).numberOfPieces += 1;
 			System.out.println(currentPeerID + " is handling piece message from " + receivedMsg.PeerID);
@@ -355,7 +356,11 @@ public class MessageHandler extends Thread implements PeerConstants {
 				}
 			}
 
-			if((allPeerMap.get(currentPeerID).hasFile != 1) && (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts - 1))
+			System.out.println("Number of Pieces "+allPeerMap.get(currentPeerID).numberOfPieces);
+			System.out.println("Total Split parts "+totalSplitParts);
+
+
+			if((allPeerMap.get(currentPeerID).hasFile != 1) && (allPeerMap.get(currentPeerID).numberOfPieces == totalSplitParts))
 			{
 				UtilityClass.mergeSplitFiles();
 			}

@@ -108,7 +108,7 @@ public class UtilityClass {
 		try {
 			ArrayList<byte[]> list = new ArrayList<byte[]>();
 			int i = 0;
-
+			System.out.println("Total Split Parts" + totalSplitParts);
 			while (i < totalSplitParts) {
 				String peerDirectory = System.getProperty("user.dir") + File.separator + "peer_" + currentPeerID + File.separator + i + ".dat";
 				File f = new File(peerDirectory);
