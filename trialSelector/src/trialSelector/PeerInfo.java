@@ -3,7 +3,6 @@ package trialSelector;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.BitSet;
-import java.util.Date;
 
 /**
  * @author kaush
@@ -30,8 +29,7 @@ public class PeerInfo {
     int downloadRate = 0;
     public BitSet bitfield;
     public SocketChannel peerSocketChannel;
-    public Date startTime;
-    public Date endTime;
+    public static MessageHandler messageHandler;
 
 
 

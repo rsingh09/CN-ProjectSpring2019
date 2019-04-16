@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.*;
 //import java.util.Iterator;
-//import java.util.Random;
+import java.util.Random;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 
@@ -61,6 +61,7 @@ public class peerProcess {
 		};
 
 		createServer(UtilityClass.getCurrentPeerInfo());
+		
 		for (int id : UtilityClass.allPeerMap.keySet()) {
 			if (id == UtilityClass.currentPeerID) {
 				break;
@@ -93,11 +94,16 @@ public class peerProcess {
 
 
 	private static void createSocketChannels(PeerInfo peerInfo) {
-		EchoClient client = new EchoClient(peerInfo);
-		client.start();
-
+		//EchoClient client = new EchoClient();
+		try {
+			UtilityClass.sendTcpRequest(peerInfo);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//client.start();
 		//client.sendMessage(handshakeMsg);
-
 	}
 
 /*	public static File createDirectory(String directoryPath) throws IOException {

@@ -13,14 +13,19 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 
-public class EchoServer extends Thread {
+
+public class EchoServer extends Thread 
+{
 
 	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
 
 	public void run() {
 
 		try {
-			UtilityClass.selectorP2P = Selector.open();
+			if(UtilityClass.selectorP2P == null)
+			{
+				UtilityClass.selectorP2P = Selector.open();
+			}
 			ServerSocketChannel serverSocket = ServerSocketChannel.open();
 
 			serverSocket.bind(new InetSocketAddress(UtilityClass.allPeerMap.get(UtilityClass.currentPeerID).hostName,
@@ -28,9 +33,10 @@ public class EchoServer extends Thread {
 
 			serverSocket.configureBlocking(false);
 			serverSocket.register(UtilityClass.selectorP2P, SelectionKey.OP_ACCEPT);
-			ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
+
 			System.out.println("Peer " + UtilityClass.currentPeerID + " listening at: "
 					+ UtilityClass.allPeerMap.get(UtilityClass.currentPeerID).listeningPort);
+
 			while (true) {
 				UtilityClass.selectorP2P.select();
 				Set<SelectionKey> selectedKeys = UtilityClass.selectorP2P.selectedKeys();
@@ -40,12 +46,12 @@ public class EchoServer extends Thread {
 					SelectionKey key = iter.next();
 
 					if (key.isAcceptable()) {
-						register(UtilityClass.selectorP2P, serverSocket);
+						register(UtilityClass.selectorP2P, serverSocket, key);
 					}
-
 					if (key.isReadable()) {
-						System.out.println("MsgRecieved");
-						answerWithEcho(buffer, key);
+						//System.out.println("MsgRecieved");
+						answerWithEcho(key);
+						//System.out.println(key.toString());
 					}
 					iter.remove();
 				}
@@ -59,29 +65,50 @@ public class EchoServer extends Thread {
 		}
 	}
 
-	private static void answerWithEcho(ByteBuffer buffer, SelectionKey key) throws IOException {
+	private static void answerWithEcho(SelectionKey key) throws IOException {
 		SocketChannel client = (SocketChannel) key.channel();
+		ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
+		// client.
 		client.read(buffer);
-		// Here we will deploy the message to the concurrent linked queue.
-		// Buffer has my message
-		// Write message from buffer to Message Handler
-		byte[] bytes = null;
-		bytes = buffer.array();
-		buffer.clear();
+		byte[] b = buffer.array();
 		try {
-			Object obj = UtilityClass.ReadFromBuffer(bytes);
-			MessageHandler messageHandler = new MessageHandler((SocketChannel) key.channel(), buffer);
-			messageHandler.messagesQueue.add(obj);
-			messageHandler.start();
-		} catch (Exception e) {
+			Object obj = UtilityClass.ReadFromBuffer(b);
+			if (obj instanceof HandshakeMessage)
+			{
+				buffer.flip();
+				buffer.clear();
+				HandshakeMessage hm=(HandshakeMessage)obj;
+				int peerid=hm.getPeerID();
+				if(!UtilityClass.channelMessageHandlerMap.contains(peerid)) {
+					MessageHandler messageHandler = new MessageHandler(client);
+					messageHandler.start();
+					UtilityClass.allPeerMap.get(peerid).peerSocketChannel = client;
+					UtilityClass.channelMessageHandlerMap.put(peerid, messageHandler);
+					UtilityClass.channelKeyHandler.put(key.toString(),peerid);
+					messageHandler.messagesQueue.add(obj);
+				}
+			}
+			else if (obj instanceof Message)
+			{
+				Message hm=(Message)obj;
+				int peerid=hm.PeerID;
+				UtilityClass.channelMessageHandlerMap.get(peerid).messagesQueue.add(obj);
+			}
+//			if (UtilityClass.channelMessageHandlerMap.contains(key)) {
+//				UtilityClass.channelMessageHandlerMap.get(key).messagesQueue.add(buffer);
+//			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	private static void register(Selector selector, ServerSocketChannel serverSocket) throws IOException {
+	private static void register(Selector selector, ServerSocketChannel serverSocket, SelectionKey key)
+			throws IOException {
 		SocketChannel client = serverSocket.accept();
 		client.configureBlocking(false);
 		client.register(selector, SelectionKey.OP_READ);
+
 	}
 
 }
