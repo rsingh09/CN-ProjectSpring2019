@@ -8,10 +8,13 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
  public class BitTorrentLogger {
-     static Logger logger = Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
+     static Logger logger ;//Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
     private boolean append;
 
      protected BitTorrentLogger(){
+
+         ReadConfigurations.readPeerInfo();
+         ReadConfigurations.readCommonConfig();
          append = true;
          logger = Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
          FileHandler handler = null;

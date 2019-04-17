@@ -1,7 +1,5 @@
 package trialSelector;
 
-import org.apache.log4j.Logger;
-
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
