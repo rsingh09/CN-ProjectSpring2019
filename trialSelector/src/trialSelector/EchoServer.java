@@ -17,8 +17,8 @@ import java.util.Set;
 public class EchoServer extends Thread 
 {
 
-//	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
-	private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
+	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+//	private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
 
 	public void run() {
 

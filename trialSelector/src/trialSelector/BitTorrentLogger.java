@@ -8,17 +8,38 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
  public class BitTorrentLogger {
+     static Logger logger = Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
     private boolean append;
 
-     public BitTorrentLogger(){
-         append = true;
-     }
-
-  /*  private static BitTorrentLogger loggerInstance = null;
-
      protected BitTorrentLogger(){
-          append = true;
+         append = true;
+         logger = Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
+         FileHandler handler = null;
+         String fileName = "log_peer_" + UtilityClass.currentPeerID + ".log";
+         File f = new File("fileName");
+         if (!f.exists()) {
+             try {
+                 f.createNewFile();
+             } catch (IOException e) {
+                 // TODO Auto-generated catch block
+                 e.printStackTrace();
+             }
+         }
+         try {
+             handler = new FileHandler(fileName, append);
+             handler.setFormatter(new SimpleFormatter());
+         } catch (SecurityException | IOException e) {
+             // TODO Auto-generated catch block
+             e.printStackTrace();
+         }
+         logger.addHandler(handler);
      }
+
+   private static BitTorrentLogger loggerInstance = null;
+
+//     protected BitTorrentLogger(){
+//          append = true;
+//     }
 
      public static BitTorrentLogger getInstance(){
          if (null == loggerInstance){
@@ -29,7 +50,7 @@ import java.util.logging.SimpleFormatter;
          }
 
          return loggerInstance;
-     } */
+     }
 
 	/*
 	Function name : log
@@ -37,6 +58,7 @@ import java.util.logging.SimpleFormatter;
 	Return: Void
 	Writes into the log file based on based on the peer id
 	*/
+ /*
     public void log(String msg, Level level) {
         Logger logger = Logger.getLogger(Integer.toString(UtilityClass.currentPeerID));
         FileHandler handler = null;
@@ -71,7 +93,11 @@ import java.util.logging.SimpleFormatter;
 //                logger.warning(msg);
 //                break;
 
-    }
+    } */
+
+     public void log(String msg, Level level) {
+        logger.log(level, msg);
+     }
 	/*
 	Function name : log
 	Parameters passed: Msg (message to be printed), level of the message Info/Warning/Severe

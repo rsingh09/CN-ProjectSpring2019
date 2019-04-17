@@ -2,6 +2,8 @@ package trialSelector;
 
 //import jdk.jshell.execution.Util;
 
+
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,8 +16,8 @@ import java.util.logging.Level;
 public class peerProcess {
 	private static EchoServer server;
     private static ScheduledExecutorService scheduler;
-//    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
-    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
+    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
+//    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
@@ -264,5 +266,6 @@ public class peerProcess {
         }
 
     }
+
 
 }

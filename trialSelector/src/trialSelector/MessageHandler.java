@@ -1,5 +1,7 @@
 package trialSelector;
 
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -12,8 +14,9 @@ import java.util.logging.Level;
 import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
-	private static BitTorrentLogger logger = new BitTorrentLogger();
-	// private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+//	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+//private static final Logger testLogger = Logger.getLogger(peerProcess.class);
+	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
 	private SocketChannel socketChannel;
 	private ByteBuffer buffer;
 	ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();
@@ -23,6 +26,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	public void run() {
+//		testLogger.info("from msg handler");
 		while (true) {
 			if (!messagesQueue.isEmpty()) {
 				Object receivedMessage = messagesQueue.poll();
