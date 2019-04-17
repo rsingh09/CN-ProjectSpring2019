@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 
 public class UtilityClass {
 	public static ConcurrentHashMap<Integer, PeerInfo> allPeerMap = new ConcurrentHashMap<Integer, PeerInfo>();
@@ -52,6 +53,7 @@ public class UtilityClass {
 	}
 
 	public static void sendTcpRequest(PeerInfo peer) throws IOException {
+		BitTorrentLogger logger = new BitTorrentLogger();
 		SocketChannel client = null;
 		try {
 
@@ -62,21 +64,21 @@ public class UtilityClass {
 			}
 			client.register(UtilityClass.selectorP2P, SelectionKey.OP_READ);
 			UtilityClass.allPeerMap.get(peer.peerID).peerSocketChannel = client;
-			
-			
-			//UtilityClass.channelMessageHandlerMap.put(peer.peerID, messageHandler);
-			//UtilityClass.channelKeyHandler.put(key.toString(),peerid);
+
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 10);
-		System.out.println("Sending Handshake to: " + peer.peerID);
+
+
+
 		HandshakeMessage handshakeMsg = new HandshakeMessage(UtilityClass.currentPeerID);
 		UtilityClass.allPeerMap.get(peer.peerID).isHandshakeSent = true;
 		ByteBuffer buffer = UtilityClass.transformObject(handshakeMsg);
 		MessageHandler messageHandler = new MessageHandler(client);
 		messageHandler.start();
+		logger.log("Peer "+ UtilityClass.currentPeerID + " makes a TCP connection with "+ peer.peerID, Level.INFO);
 		UtilityClass.channelMessageHandlerMap.put(peer.peerID, messageHandler);
 		// buffer.wrap(b, 0, b.length);
 		client.write(buffer);
