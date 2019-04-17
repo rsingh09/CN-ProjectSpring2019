@@ -29,6 +29,7 @@ public class EchoServer extends Thread
 			{
 				UtilityClass.selectorP2P = Selector.open();
 			}
+
 			ServerSocketChannel serverSocket = ServerSocketChannel.open();
 
 			serverSocket.bind(new InetSocketAddress(UtilityClass.allPeerMap.get(UtilityClass.currentPeerID).hostName,
@@ -119,6 +120,7 @@ public class EchoServer extends Thread
 	private static void register(Selector selector, ServerSocketChannel serverSocket, SelectionKey key)
 			throws IOException {
 		SocketChannel client = serverSocket.accept();
+		client.socket().setTcpNoDelay(true);
 		client.configureBlocking(false);
 		client.register(selector, SelectionKey.OP_READ);
 

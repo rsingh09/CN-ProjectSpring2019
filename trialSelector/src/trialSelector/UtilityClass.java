@@ -58,6 +58,7 @@ public class UtilityClass {
 		try {
 
 			client = SocketChannel.open(new InetSocketAddress(peer.hostName, peer.listeningPort));
+			client.socket().setTcpNoDelay(true);
 			client.configureBlocking(false);
 			if (UtilityClass.selectorP2P == null) {
 				UtilityClass.selectorP2P = Selector.open();
