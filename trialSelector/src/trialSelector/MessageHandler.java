@@ -7,24 +7,25 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 import static trialSelector.UtilityClass.*;
 
 public class MessageHandler extends Thread implements PeerConstants {
-//	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
-//private static final Logger testLogger = Logger.getLogger(peerProcess.class);
-	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
-	private SocketChannel socketChannel;
-	private ByteBuffer buffer;
+	private static BitTorrentLogger logger = new BitTorrentLogger();
+	// private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+	private final SocketChannel socketChannel;
+//	private ByteBuffer buffer;
 	ConcurrentLinkedQueue<Object> messagesQueue = new ConcurrentLinkedQueue<Object>();
+	public static Object chanelLock = new Object();
+	//public static ReentrantLock lock = new ReentrantLock();
 
 	public MessageHandler(SocketChannel keyChannel) {
 		socketChannel = keyChannel;
 	}
 
 	public void run() {
-//		testLogger.info("from msg handler");
 		while (true) {
 			if (!messagesQueue.isEmpty()) {
 				Object receivedMessage = messagesQueue.poll();
@@ -78,8 +79,9 @@ public class MessageHandler extends Thread implements PeerConstants {
 	private void handleUnchokeMessage(int remotePeerID) {
 //		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Unchoked list");
 //		UtilityClass.unChokedPeers.add(remotePeerID);
-		//logger.log("Size of interestedPeers list after handling unchoke msg: " + UtilityClass.unChokedPeers.size(),
-		//		Level.WARNING);
+		// logger.log("Size of interestedPeers list after handling unchoke msg: " +
+		// UtilityClass.unChokedPeers.size(),
+		// Level.WARNING);
 		sendRequestMessage(remotePeerID);
 
 	}
@@ -91,14 +93,16 @@ public class MessageHandler extends Thread implements PeerConstants {
 		BitSet currentPeerBitset = new BitSet(noOfsplits);
 		currentPeerBitset = (BitSet) currentPeer.bitfield.clone();
 
-		////logger.log("Current peer " + currentPeer.peerID + " bitset is " + currentPeerBitset, Level.INFO);
+		//// logger.log("Current peer " + currentPeer.peerID + " bitset is " +
+		//// currentPeerBitset, Level.INFO);
 		BitSet remotePeerBitset = new BitSet(noOfsplits);
 		remotePeerBitset = (BitSet) allPeerMap.get(remotePeerId).bitfield.clone();
 		currentPeerBitset.flip(0, noOfsplits);
 		currentPeerBitset.and(remotePeerBitset);
-		////logger.log("After flipping and AND is : " + currentPeerBitset, Level.INFO);
+		//// logger.log("After flipping and AND is : " + currentPeerBitset, Level.INFO);
 
-		//logger.log(currentPeerID + " is sending the request message now", Level.INFO);
+		// logger.log(currentPeerID + " is sending the request message now",
+		// Level.INFO);
 
 		Random rand = new Random();
 
@@ -106,7 +110,8 @@ public class MessageHandler extends Thread implements PeerConstants {
 			while (true) {
 				int randIndex = rand.nextInt(noOfsplits);
 				if (currentPeerBitset.get(randIndex)) {
-					//logger.log("The index of the piece I am requesting is " + randIndex, Level.INFO);
+					// logger.log("The index of the piece I am requesting is " + randIndex,
+					// Level.INFO);
 					requestedPieces.add(randIndex);
 					byte[] payload = ByteBuffer.allocate(4).putInt(randIndex).array();
 					System.out.println(ByteBuffer.wrap(payload).getInt());
@@ -114,8 +119,9 @@ public class MessageHandler extends Thread implements PeerConstants {
 					Message msg = new Message(UtilityClass.currentPeerID, REQUEST);
 					msg.messagePayload = payload;
 					try {
+						ByteBuffer buffer;
 						buffer = transformObject(msg);
-						writeToChannel();
+						writeToChannel(buffer);
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						logger.log(e.getMessage(), Level.SEVERE);
@@ -134,6 +140,7 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handleHandshakeMessage(HandshakeMessage message) {
+		System.out.println(currentPeerID + " handling handshake from:  " + (message).getPeerID());
 		try {
 			// this.remotePeerID = (message).getPeerID();
 			System.out.println(currentPeerID + " sending handshake to:  " + (message).getPeerID());
@@ -141,10 +148,9 @@ public class MessageHandler extends Thread implements PeerConstants {
 			if (!allPeerMap.get(message.getPeerID()).isHandshakeSent) {
 				// allPeerMap.get(message.getPeerID()).peerSocketChannel = socketChannel;
 				HandshakeMessage reply = new HandshakeMessage(UtilityClass.currentPeerID);
+				ByteBuffer buffer;
 				buffer = transformObject(reply);
-				// buffer.wrap(b);
-				socketChannel.write(buffer);
-				// writeToChannel();
+				writeToChannel(buffer);
 				allPeerMap.get(message.getPeerID()).isHandshakeSent = true;
 				// Send Bitfield messsage only if my Bitset is not empty
 				if (!allPeerMap.get(currentPeerID).bitfield.isEmpty()) {
@@ -191,10 +197,11 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handleInterestedMessage(Integer remotePeerID) {
-		//logger.log("Adding" + remotePeerID + " to " + currentPeerID + "Interested list", Level.INFO);
+		// logger.log("Adding" + remotePeerID + " to " + currentPeerID + "Interested
+		// list", Level.INFO);
 		System.out.println("Adding" + remotePeerID + " to " + currentPeerID + "Interested list");
 		UtilityClass.intersetedPeers.add(remotePeerID);
-		//logger.log("Sending unchoke msg to peer: " + remotePeerID, Level.INFO);
+		// logger.log("Sending unchoke msg to peer: " + remotePeerID, Level.INFO);
 		allPeerMap.get(remotePeerID).peerState = PeerState.UNCHOKED;
 		sendUnchokeMessage(remotePeerID);
 		unChokedPeers.add(remotePeerID);
@@ -202,19 +209,23 @@ public class MessageHandler extends Thread implements PeerConstants {
 	}
 
 	private void handleNotInterestedMessage(Integer remotePeerID) {
-		//logger.log("Removing " + remotePeerID + " from " + currentPeerID + "' s interested list", Level.INFO);
+		// logger.log("Removing " + remotePeerID + " from " + currentPeerID + "' s
+		// interested list", Level.INFO);
 		System.out.println("Removing " + remotePeerID + " from " + currentPeerID + "' s interested list");
 		UtilityClass.intersetedPeers.remove(remotePeerID);
 	}
 
 	private void sendBitfieldMessage(int remotePeerID) {
 		try {
-			//logger.log("Sending bitfield message from " + currentPeerID + " to " + remotePeerID, Level.INFO);
+
+			ByteBuffer buffer;
+			// logger.log("Sending bitfield message from " + currentPeerID + " to " +
+			// remotePeerID, Level.INFO);
 			byte[] bitfieldByteArray = UtilityClass.allPeerMap.get(currentPeerID).bitfield.toByteArray();
 			Message message = new Message(currentPeerID, BITFIELD);
 			message.messagePayload = bitfieldByteArray;
 			buffer = transformObject(message);
-			writeToChannel();
+			writeToChannel(buffer);
 
 		} catch (Exception e) {
 			logger.log(e.getMessage(), Level.SEVERE);
@@ -228,9 +239,10 @@ public class MessageHandler extends Thread implements PeerConstants {
 		Message msg = new Message(UtilityClass.currentPeerID, INTERESTED);
 		try {
 			System.out.println(currentPeerID + "sending inetrested to: " + remotePeerID);
+			ByteBuffer buffer;
 			buffer = transformObject(msg);
-			writeToChannel();
-			buffer.flip();
+			writeToChannel(buffer);
+			// buffer.flip();
 		} catch (IOException e) {
 			logger.log(e.getMessage(), Level.SEVERE);
 		}
@@ -242,9 +254,10 @@ public class MessageHandler extends Thread implements PeerConstants {
 		System.out.println(currentPeerID + " sending unchoke message to Peer " + remotePeerID);
 		Message msg = new Message(UtilityClass.currentPeerID, UNCHOKE);
 		try {
+			ByteBuffer buffer;
 			buffer = transformObject(msg);
-			writeToChannel();
-			buffer.flip();
+			writeToChannel(buffer);
+			// buffer.flip();
 		} catch (IOException e) {
 			logger.log(e.getMessage(), Level.SEVERE);
 		}
@@ -255,9 +268,10 @@ public class MessageHandler extends Thread implements PeerConstants {
 		System.out.println(UtilityClass.currentPeerID + " sending Not-Interested message to Peer " + remotePeerID);
 		Message msg = new Message(UtilityClass.currentPeerID, NOT_INTERESTED);
 		try {
+			ByteBuffer buffer;
 			buffer = UtilityClass.transformObject(msg);
-			writeToChannel();
-			buffer.flip();
+			writeToChannel(buffer);
+			// buffer.flip();
 		} catch (IOException e) {
 			logger.log(e.getMessage(), Level.SEVERE);
 		}
@@ -328,8 +342,8 @@ public class MessageHandler extends Thread implements PeerConstants {
 				fileOutputStream.close();
 				allPeerMap.get(currentPeerID).bitfield.set(in);
 				allPeerMap.get(receivedMsg.PeerID).bitfield.set(in);
-				//buffer.flip();
-				buffer.clear();
+				// buffer.flip();
+				// buffer.clear();
 				sendRequestMessage(receivedMsg.PeerID);
 			} catch (FileNotFoundException e) {
 				logger.log(e.getMessage(), Level.SEVERE);
@@ -378,13 +392,13 @@ public class MessageHandler extends Thread implements PeerConstants {
 	private void sendHaveMessage(Message msg) {
 		msg.msgType = HAVE;
 		try {
-			buffer.clear();
+			ByteBuffer buffer;
 			buffer = UtilityClass.transformObject(msg);
+			writeToChannel(buffer);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		writeToChannel();
 	}
 
 	private void sendPieceMessage(int pieceIndex, int remotePeerID) {
@@ -409,10 +423,11 @@ public class MessageHandler extends Thread implements PeerConstants {
 			byte[] payload = baos.toByteArray();
 			Message sendMessage = new Message(currentPeerID, PIECE);
 			sendMessage.setMessagePayload(payload);
+			ByteBuffer buffer;
 			buffer = transformObject(sendMessage);
 //			buffer.clear();
 //			socketChannel.write(buffer);
-			writeToChannel();
+			writeToChannel(buffer);
 			// buffer.flip();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -423,16 +438,18 @@ public class MessageHandler extends Thread implements PeerConstants {
 		}
 	}
 
-	synchronized private void writeToChannel() {
-		try {
-			// buffer.clear();
-			socketChannel.write(buffer);
-			buffer.flip();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private void writeToChannel(ByteBuffer buffer) {
+		EchoServer.lock.lock();
+		{
+			try {
+				socketChannel.write(buffer);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			buffer.clear();
 		}
-		buffer.clear();
+		EchoServer.lock.unlock();
 	}
 
 }

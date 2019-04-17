@@ -1,29 +1,19 @@
 package trialSelector;
 
-//import jdk.jshell.execution.Util;
-
-
-
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.*;
-//import java.util.Iterator;
-import java.util.Random;
-import java.util.concurrent.*;
 import java.util.logging.Level;
+
 
 public class peerProcess {
 	private static EchoServer server;
-//    private static ScheduledExecutorService scheduler;
     private static BitTorrentScheduler bitTorrentScheduler = new BitTorrentScheduler();
-    private static BitTorrentLogger bitTorrentLogger;// = BitTorrentLogger.getInstance();
-//    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
+    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
+
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
 		UtilityClass.currentPeerID = currentPeerID;
-		bitTorrentLogger = BitTorrentLogger.getInstance();
 
 		// iterate to send connect requests to the servers.
 		// Once accepting the connection, assign the socket channel to the selector
@@ -66,7 +56,7 @@ public class peerProcess {
 		};
 
 		createServer(UtilityClass.getCurrentPeerInfo());
-		
+
 		for (int id : UtilityClass.allPeerMap.keySet()) {
 			if (id == UtilityClass.currentPeerID) {
 				break;
@@ -111,7 +101,7 @@ public class peerProcess {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		//client.start();
 		//client.sendMessage(handshakeMsg);
 	}
@@ -273,6 +263,5 @@ public class peerProcess {
 //        }
 //
 //    }
-
 
 }
