@@ -2,8 +2,6 @@ package trialSelector;
 
 //import jdk.jshell.execution.Util;
 
-
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,8 +14,8 @@ import java.util.logging.Level;
 public class peerProcess {
 	private static EchoServer server;
     private static ScheduledExecutorService scheduler;
-    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
-//    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
+//    private static BitTorrentLogger bitTorrentLogger = BitTorrentLogger.getInstance();
+    private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
 
 	public static void main(String args[]) {
 		int currentPeerID = Integer.parseInt(args[0]);
@@ -78,7 +76,7 @@ public class peerProcess {
 
         scheduler = Executors.newScheduledThreadPool(2);
         //StartShutdownProcess();
-//        determineKPreferredNeighborsAndSendUnchoke(CommonProperties.getUnchokingInterval());
+        //determineKPreferredNeighborsAndSendUnchoke(CommonProperties.getUnchokingInterval());
         sendUnchokeMessageToOptimisticallyUnchokedPeer(CommonProperties.optimisticUnchokingInterval);
 	}
 
@@ -131,7 +129,7 @@ public class peerProcess {
                     ArrayList<PeerInfo> interestedPeers = new ArrayList<>();
                     bitTorrentLogger.log("Size of interestedPeers list inside sendUnchokeMessageToOptimisticallyUnchokedPeer method: " + UtilityClass.intersetedPeers.size(), Level.WARNING);
                     for (int id : UtilityClass.intersetedPeers) {
-                        System.out.println("The id is : " + id);
+                        //System.out.println("The id is : " + id);
                         interestedPeers.add(UtilityClass.allPeerMap.get(id));
                     }
 
@@ -266,6 +264,5 @@ public class peerProcess {
         }
 
     }
-
 
 }

@@ -12,12 +12,14 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class EchoServer extends Thread 
 {
 
 	private static BitTorrentLogger logger = BitTorrentLogger.getInstance();
+	public static ReentrantLock lock = new ReentrantLock();
 //	private static BitTorrentLogger bitTorrentLogger = new BitTorrentLogger();
 
 	public void run() {
@@ -70,14 +72,19 @@ public class EchoServer extends Thread
 		SocketChannel client = (SocketChannel) key.channel();
 		ByteBuffer buffer = ByteBuffer.allocate(CommonProperties.pieceSize + 1000);
 		// client.
-		client.read(buffer);
+		//synchronized (UtilityClass.chanelLock) {
+		lock.lock();
+			client.read(buffer);
+			lock.unlock();
+		//}
+		
 		byte[] b = buffer.array();
 		System.out.println("Byte Length: "+ b.length);
 		try {
 			Object obj = UtilityClass.ReadFromBuffer(b);
 			if (obj instanceof HandshakeMessage)
 			{
-				//buffer.clear();
+				//buffer.flip();
 				HandshakeMessage hm=(HandshakeMessage)obj;
 				int peerid=hm.getPeerID();
 				if(!UtilityClass.channelMessageHandlerMap.contains(peerid)) {
@@ -87,12 +94,14 @@ public class EchoServer extends Thread
 					UtilityClass.channelMessageHandlerMap.put(peerid, messageHandler);
 					UtilityClass.channelKeyHandler.put(key.toString(),peerid);
 					messageHandler.messagesQueue.add(obj);
+				}else {
+					UtilityClass.channelMessageHandlerMap.get(hm.getPeerID()).messagesQueue.add(obj);
 				}
 			}
 			else if (obj instanceof Message)
 			{
-				buffer.flip();
-				buffer.clear();
+				//buffer.flip();
+				//buffer.clear();
 				Message hm=(Message)obj;
 				int peerid=hm.PeerID;
 				System.out.println(hm.PeerID + ": Message Type: " + hm.getMessageType());

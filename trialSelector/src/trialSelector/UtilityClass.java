@@ -25,6 +25,7 @@ public class UtilityClass {
 	public static Selector selectorP2P;
 	public static int currentPeerID;
 	public static int totalSplitParts;
+	
 
 	public static PeerInfo getCurrentPeerInfo() {
 		return allPeerMap.get(currentPeerID);
@@ -79,8 +80,8 @@ public class UtilityClass {
 		UtilityClass.channelMessageHandlerMap.put(peer.peerID, messageHandler);
 		// buffer.wrap(b, 0, b.length);
 		client.write(buffer);
+		buffer.clear();
 		//buffer.flip();
-		//buffer.clear();
 
 	}
 
